@@ -162,6 +162,7 @@ async fn callback_handler(
 async fn main() -> Result<(), Box<dyn Error>> {
     pretty_env_logger::init();
     log::info!("Starting bot...");
+    dotenv::dotenv().ok();
 
     let bot = Bot::from_env().auto_send();
 
