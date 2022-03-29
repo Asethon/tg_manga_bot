@@ -64,9 +64,9 @@ fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
     InlineKeyboardMarkup::new(keyboard)
 }
 
-struct Manga {
+struct Manga<'a> {
     id: i32,
-    title: &'_ str,
+    title: &'a str,
 }
 
 impl Manga {
@@ -75,11 +75,11 @@ impl Manga {
     }
 }
 
-struct Chapter {
+struct Chapter<'a> {
     id: i32,
     manga_id: i32,
-    chapter_id: &'_ str,
-    link: &'_ str,
+    chapter_id: &'a str,
+    link: &'a str,
 }
 
 impl Chapter {
