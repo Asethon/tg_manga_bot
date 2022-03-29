@@ -7,7 +7,6 @@ use teloxide::{
     },
     utils::command::BotCommand,
 };
-use teloxide::utils::command::ParseError;
 
 #[derive(BotCommand)]
 #[command(rename = "lowercase", description = "These commands are supported:")]
