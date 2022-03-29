@@ -8,6 +8,7 @@ use teloxide::{
     },
     utils::command::BotCommand,
 };
+use teloxide::types::ParseMode::MarkdownV2;
 
 #[derive(BotCommand)]
 #[command(rename = "lowercase", description = "These commands are supported:")]
@@ -39,7 +40,7 @@ fn make_keyboard2() -> InlineKeyboardMarkup {
     let mut keyboard: Vec<Vec<InlineKeyboardButton>> = vec![];
     let mut chapters: HashMap<&str, &str> = HashMap::new();
 
-    chapters.insert("https://legra.ph/Pik-boevyh-iskusstv-04-07-2", "Глава 1");
+    chapters.insert("https://t.me/shrimp_from_the_island_bot/2", "Глава 1");
     chapters.insert("https://legra.ph/Pik-boevyh-iskusstv-04-07-3", "Глава 2");
 
     let row = chapters
@@ -104,11 +105,11 @@ async fn callback_handler(
                 } else {
                     let mut chapters: HashMap<String, &str> = HashMap::new();
 
-                    chapters.insert(String::from("https://legra.ph/Pik-boevyh-iskusstv-04-07-2"), "Глава 1");
+                    chapters.insert(String::from("https://t.me/shrimp_from_the_island_bot/2"), "Глава 1");
                     chapters.insert(String::from("https://legra.ph/Pik-boevyh-iskusstv-04-07-3"), "Глава 2");
                     let chapter = *chapters.get(&command).unwrap();
                     let text = format!("[{}]({})", chapter, command);
-                    bot.edit_message_text(chat.id, id, text).await?;
+                    bot.edit_message_text(chat.id, id, text).parse_mode(MarkdownV2).await?;
                 }
             }
             None => ()
