@@ -51,7 +51,7 @@ fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
                 .into_iter()
                 .map(|manga| InlineKeyboardButton::callback(
                     manga.title.to_owned(),
-                    "/manga/" + manga.id.to_string())
+                    "/manga/".to_owned() + &manga.id.to_string())
                 )
                 .collect();
         }
