@@ -7,6 +7,7 @@ use teloxide::{
     },
     utils::command::BotCommand,
 };
+use teloxide::utils::command::ParseError;
 
 #[derive(BotCommand)]
 #[command(rename = "lowercase", description = "These commands are supported:")]
@@ -17,6 +18,10 @@ enum Command {
     Start,
     #[command(description = "Main menu")]
     Menu,
+    #[command(description = "Manga")]
+    Manga,
+    #[command(description = "Chapter")]
+    Chapter,
     #[command(description = "ping-pong")]
     Ping,
 }
@@ -38,7 +43,7 @@ fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
                 .map(|chapter| {
                     InlineKeyboardButton::callback(
                         "Глава ".to_owned() + chapter.chapter_id,
-                        chapter.link.to_owned(),
+                        "/chapter?".to_owned() + &chapter.id.to_string(),
                     )
                 })
                 .collect();
@@ -114,6 +119,7 @@ async fn message_handler(
             Err(_) => {
                 bot.send_message(m.chat.id, "Что-то пошло не так...").await?;
             }
+            _ => {}
         };
     }
 
@@ -129,14 +135,19 @@ async fn callback_handler(
     q: CallbackQuery,
     bot: AutoSend<Bot>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    if let Some(command) = q.data {
+    if let Some(link) = q.data {
         match q.message {
             Some(Message { id, chat, .. }) => {
-                let split: Vec<&str> = command.split('?').collect();
-                let link = split[0];
-                let count = split.into_iter().count();
-                let text = format!("link: {}, {}", link, count);
-                bot.send_message(chat.id, text).await?;
+                let split: Vec<&str> = link.split('?').collect();
+                match split[0] {
+                    Some(Command::Manga) => {
+                        let keyboard = make_keyboard(Some(split[1]));
+                        bot.send_message(m.chat.id, "Главы:").reply_markup(keyboard).await?;
+                    }
+                    Some(Command::Chapter) => {
+                        bot.send_message(chat.id, split[1]);
+                    }
+                }
             }
             None => ()
         }
