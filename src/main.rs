@@ -3,12 +3,10 @@ use teloxide::{
     payloads::SendMessageSetters,
     prelude2::*,
     types::{
-        InlineKeyboardButton, InlineKeyboardMarkup,
+        InlineKeyboardButton, InlineKeyboardMarkup, ParseMode::MarkdownV2
     },
     utils::command::BotCommand,
 };
-use teloxide::types::ParseMode::MarkdownV2;
-use teloxide::utils::command::ParseError;
 
 #[derive(BotCommand)]
 #[command(rename = "lowercase", description = "These commands are supported:")]
