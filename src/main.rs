@@ -75,15 +75,15 @@ impl<'a> Manga<'a> {
     }
 }
 
-struct Chapter<'a> {
+struct Chapter<'b> {
     id: i32,
     manga_id: i32,
-    chapter_id: &'a str,
-    link: &'a str,
+    chapter_id: &'b str,
+    link: &'b str,
 }
 
-impl<'a> Chapter<'a> {
-    fn new<'a>(id: i32, manga_id: i32, chapter_id: &'a str, link: &'a str) -> Chapter<'a> {
+impl<'b> Chapter<'b> {
+    fn new<'b>(id: i32, manga_id: i32, chapter_id: &'b str, link: &'b str) -> Chapter<'b> {
         Chapter { id, manga_id, chapter_id, link }
     }
 }
