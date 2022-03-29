@@ -145,11 +145,11 @@ async fn callback_handler(
                 let split: Vec<&str> = link.split('?').collect();
                 let link_id: i32 = split[1].parse::<i32>().unwrap();
                 match split[0] {
-                    Ok("/manga") => {
+                    "/manga" => {
                         let keyboard = make_keyboard(Some(link_id));
                         bot.edit_message_text(chat.id, id, "Главы:").reply_markup(keyboard).await?;
                     }
-                    Ok("/chapter") => {
+                    "/chapter" => {
                         let chapters = get_chapters();
                         let chapter: Vec<Chapter> = chapters
                             .into_iter()
