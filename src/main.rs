@@ -17,6 +17,8 @@ enum Command {
     Help,
     #[command(description = "Start")]
     Start,
+    #[command(description = "ping-pong")]
+    Ping,
 }
 
 fn make_keyboard() -> InlineKeyboardMarkup {
@@ -71,15 +73,11 @@ async fn message_handler(
                 let keyboard = make_keyboard();
                 bot.send_message(m.chat.id, "Каталог:").reply_markup(keyboard).await?;
             }
+            Ok(Command::Ping) => {
+                bot.send_message(m.chat.id, "pong").await?;
+            }
             Err(_) => {
-                match text {
-                    "Ping" => {
-                        bot.send_message(m.chat.id, "Pong").await?;
-                    }
-                    _ => {
-                        bot.send_message(m.chat.id, "Что-то пошло не так...").await?;
-                    }
-                };
+                bot.send_message(m.chat.id, "Что-то пошло не так...").await?;
             }
         };
     }
