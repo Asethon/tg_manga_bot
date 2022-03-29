@@ -26,17 +26,10 @@ enum Command {
 }
 
 fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
-    let mut row;
+    let row;
     match manga_id {
         Some(id) => {
-            let mut chapters: Vec<Chapter> = vec![];
-            let chapter1 = Chapter::new(1, 1, "1",
-                                        "https://t.me/shrimp_from_the_island_bot/2");
-            let chapter2 = Chapter::new(2, 2, "2",
-                                        "https://t.me/shrimp_from_the_island_bot/6");
-            chapters.push(chapter1);
-            chapters.push(chapter2);
-            row = chapters
+            row = get_chapters()
                 .into_iter()
                 .filter(|chapter| chapter.manga_id == id)
                 .map(|chapter| {
@@ -48,9 +41,7 @@ fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
                 .collect();
         }
         None => {
-            let mut manga_list: Vec<Manga> = vec![];
-            let manga = Manga::new(1, "Пик боевых искусств");
-            manga_list.push(manga);
+            let manga_list = get_catalog();
             row = manga_list
                 .into_iter()
                 .map(|manga| InlineKeyboardButton::callback(
@@ -125,6 +116,24 @@ async fn message_handler(
     Ok(())
 }
 
+fn get_catalog() -> Vec<Manga> {
+    let mut manga_list: Vec<Manga> = vec![];
+            let manga = Manga::new(1, "Пик боевых искусств");
+            manga_list.push(manga);
+    return manga_list;
+}
+
+fn get_chapters() -> Vec<Chapter> {
+    let mut chapters: Vec<Chapter> = vec![];
+            let chapter1 = Chapter::new(1, 1, "1",
+                                        "https://t.me/shrimp_from_the_island_bot/2");
+            let chapter2 = Chapter::new(2, 2, "2",
+                                        "https://t.me/shrimp_from_the_island_bot/6");
+            chapters.push(chapter1);
+            chapters.push(chapter2);
+    return chapters;
+}
+
 /// When it receives a callback from a button it edits the message with all
 /// those buttons writing a text with the selected Debian version.
 ///
@@ -138,14 +147,20 @@ async fn callback_handler(
         match q.message {
             Some(Message { id, chat, .. }) => {
                 let split: Vec<&str> = link.split('?').collect();
+                let link_id: i32 = split[1].parse::<i32>().unwrap();
                 match BotCommand::parse(split[0], "buttons") {
                     Ok(Command::Manga) => {
-                        let id: i32 = split[1].parse::<i32>().unwrap();
-                        let keyboard = make_keyboard(Some(id));
+                        let keyboard = make_keyboard(Some(link_id));
                         bot.send_message(chat.id, "Главы:").reply_markup(keyboard).await?;
                     }
                     Ok(Command::Chapter) => {
-                        bot.send_message(chat.id, split[1]).await?;
+                        let chapters = get_chapters();
+                        let chapter: Vec<Chapter> = chapters
+                            .into_iter()
+                            .filter(|chapter| chapter.id == link_id)
+                            .collect();
+                        let chapter = chapter.first();
+                        bot.send_message(chat.id, chapter.unwrap().link).await?;
                     }
                     _ => {}
                 }
