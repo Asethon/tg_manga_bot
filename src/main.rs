@@ -20,8 +20,6 @@ enum Command {
     Menu,
     #[command(description = "ping-pong")]
     Ping,
-    Manga,
-    Chapter,
 }
 
 fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
@@ -108,7 +106,6 @@ async fn message_handler(
             Err(_) => {
                 bot.send_message(m.chat.id, "Что-то пошло не так...").await?;
             }
-            _ => {}
         };
     }
 
@@ -147,12 +144,12 @@ async fn callback_handler(
             Some(Message { id, chat, .. }) => {
                 let split: Vec<&str> = link.split('?').collect();
                 let link_id: i32 = split[1].parse::<i32>().unwrap();
-                match BotCommand::parse(split[0], "buttons") {
-                    Ok(Command::Manga) => {
+                match split[0] {
+                    Ok("/manga") => {
                         let keyboard = make_keyboard(Some(link_id));
                         bot.edit_message_text(chat.id, id, "Главы:").reply_markup(keyboard).await?;
                     }
-                    Ok(Command::Chapter) => {
+                    Ok("/chapter") => {
                         let chapters = get_chapters();
                         let chapter: Vec<Chapter> = chapters
                             .into_iter()
@@ -164,7 +161,6 @@ async fn callback_handler(
                         bot.edit_message_text(chat.id, id, link).reply_markup(keyboard).parse_mode(MarkdownV2).await?;
                     }
                     Err(_) => {}
-                    _ => {}
                 }
             }
             None => ()
