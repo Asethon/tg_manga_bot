@@ -140,14 +140,15 @@ async fn callback_handler(
             Some(Message { id, chat, .. }) => {
                 let split: Vec<&str> = link.split('?').collect();
                 match BotCommand::parse(split[0], "buttons") {
-                    Some(Command::Manga) => {
+                    Ok(Command::Manga) => {
                         let id: i32 = split[1].parse::<i32>().unwrap();
                         let keyboard = make_keyboard(Some(id));
                         bot.send_message(chat.id, "Главы:").reply_markup(keyboard).await?;
                     }
-                    Some(Command::Chapter) => {
+                    Ok(Command::Chapter) => {
                         bot.send_message(chat.id, split[1]);
                     }
+                    _ => {}
                 }
             }
             None => ()
