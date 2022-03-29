@@ -18,12 +18,14 @@ enum Command {
     Start,
     #[command(description = "Main menu")]
     Menu,
-    #[command(description = "Manga")]
-    Manga,
-    #[command(description = "Chapter")]
-    Chapter,
     #[command(description = "ping-pong")]
     Ping,
+}
+
+#[derive(BotCommand)]
+enum MangaCommand {
+    Manga,
+    Chapter,
 }
 
 fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
@@ -110,7 +112,6 @@ async fn message_handler(
             Err(_) => {
                 bot.send_message(m.chat.id, "Что-то пошло не так...").await?;
             }
-            _ => {}
         };
     }
 
@@ -150,11 +151,11 @@ async fn callback_handler(
                 let split: Vec<&str> = link.split('?').collect();
                 let link_id: i32 = split[1].parse::<i32>().unwrap();
                 match BotCommand::parse(split[0], "buttons") {
-                    Ok(Command::Manga) => {
+                    Ok(MangaCommand::Manga) => {
                         let keyboard = make_keyboard(Some(link_id));
                         bot.send_message(chat.id, "Главы:").reply_markup(keyboard).await?;
                     }
-                    Ok(Command::Chapter) => {
+                    Ok(MangaCommand::Chapter) => {
                         let chapters = get_chapters();
                         let chapter: Vec<Chapter> = chapters
                             .into_iter()
@@ -162,9 +163,9 @@ async fn callback_handler(
                             .collect();
                         let chapter = chapter.first().unwrap();
                         let link = format!("[Глава {}]({})", chapter.id, chapter.link);
-                        bot.edit_message_text(chat.id, id, link).parse_mode(MarkdownV2).await?;
+                        let keyboard = make_keyboard(Some(chapter.manga_id));
+                        bot.edit_message_text(chat.id, id, link).reply_markup(keyboard).parse_mode(MarkdownV2).await?;
                     }
-                    _ => {}
                 }
             }
             None => ()
