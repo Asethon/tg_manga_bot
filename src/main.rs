@@ -143,7 +143,7 @@ async fn callback_handler(
                     Some(Command::Manga) => {
                         let id: i32 = split[1].parse::<i32>().unwrap();
                         let keyboard = make_keyboard(Some(id));
-                        bot.send_message(m.chat.id, "Главы:").reply_markup(keyboard).await?;
+                        bot.send_message(chat.id, "Главы:").reply_markup(keyboard).await?;
                     }
                     Some(Command::Chapter) => {
                         bot.send_message(chat.id, split[1]);
