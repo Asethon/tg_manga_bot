@@ -116,14 +116,14 @@ async fn message_handler(
     Ok(())
 }
 
-fn get_catalog() -> Vec<Manga> {
+fn get_catalog() -> Vec<Manga<'static>> {
     let mut manga_list: Vec<Manga> = vec![];
             let manga = Manga::new(1, "Пик боевых искусств");
             manga_list.push(manga);
     return manga_list;
 }
 
-fn get_chapters() -> Vec<Chapter> {
+fn get_chapters() -> Vec<Chapter<'static>> {
     let mut chapters: Vec<Chapter> = vec![];
             let chapter1 = Chapter::new(1, 1, "1",
                                         "https://t.me/shrimp_from_the_island_bot/2");
