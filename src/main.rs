@@ -51,7 +51,7 @@ fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
                 .into_iter()
                 .map(|manga| InlineKeyboardButton::callback(
                     manga.title.to_owned(),
-                    "/manga/".to_owned() + &manga.id.to_string())
+                    "/manga?".to_owned() + &manga.id.to_string())
                 )
                 .collect();
         }
@@ -133,7 +133,7 @@ async fn callback_handler(
         match q.message {
             Some(Message { id, chat, .. }) => {
                 let split: Vec<&str> = command.split('?').collect();
-                let text = format!("link: {}", split[0]);
+                let text = format!("link: {}, id: {}", split[0], split[1]);
                 bot.send_message(chat.id, text).await?;
             }
             None => ()
