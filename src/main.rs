@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::error::Error;
 use teloxide::{
     payloads::SendMessageSetters,
@@ -8,7 +7,6 @@ use teloxide::{
     },
     utils::command::BotCommand,
 };
-use teloxide::types::ParseMode::MarkdownV2;
 
 #[derive(BotCommand)]
 #[command(rename = "lowercase", description = "These commands are supported:")]
@@ -39,7 +37,7 @@ fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
                 .filter(|chapter| chapter.manga_id == id)
                 .map(|chapter| {
                     InlineKeyboardButton::callback(
-                        "Глава " + chapter.chapter_id,
+                        "Глава ".to_owned() + chapter.chapter_id,
                         chapter.link.to_owned(),
                     )
                 })
@@ -53,7 +51,7 @@ fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
                 .into_iter()
                 .map(|manga| InlineKeyboardButton::callback(
                     manga.title.to_owned(),
-                    "/manga/" + manga.id.to_owned())
+                    "/manga/" + manga.id.to_string())
                 )
                 .collect();
         }
@@ -66,26 +64,26 @@ fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
     InlineKeyboardMarkup::new(keyboard)
 }
 
-struct Manga<'a> {
+struct Manga {
     id: i32,
-    title: &'a str,
+    title: &'_ str,
 }
 
 impl Manga {
-    fn new(id: i32, title: &str) -> Self {
+    fn new(id: i32, title: &'_ str) -> Manga {
         Manga { id, title }
     }
 }
 
-struct Chapter<'a> {
+struct Chapter {
     id: i32,
     manga_id: i32,
-    chapter_id: &'a str,
-    link: &'a str,
+    chapter_id: &'_ str,
+    link: &'_ str,
 }
 
 impl Chapter {
-    fn new(id: i32, manga_id: i32, chapter_id: &str, link: &str) -> Self {
+    fn new(id: i32, manga_id: i32, chapter_id: &'_ str, link: &'_ str) -> Chapter {
         Chapter { id, manga_id, chapter_id, link }
     }
 }
@@ -136,7 +134,7 @@ async fn callback_handler(
             Some(Message { id, chat, .. }) => {
                 let split: Vec<&str> = command.split('?').collect();
                 let text = format!("link: {}, id: {}", split[0], split[1]);
-                bot.send_message(m.chat.id, text).await?;
+                bot.send_message(chat.id, text).await?;
             }
             None => ()
         }
