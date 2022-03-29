@@ -7,7 +7,6 @@ use teloxide::{
     },
     utils::command::BotCommand,
 };
-use teloxide::utils::command::ParseError;
 
 #[derive(BotCommand)]
 #[command(rename = "lowercase", description = "These commands are supported:")]
@@ -27,7 +26,7 @@ enum Command {
 }
 
 fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
-    let mut row = vec![];
+    let mut row;
     match manga_id {
         Some(id) => {
             let mut chapters: Vec<Chapter> = vec![];
@@ -146,7 +145,7 @@ async fn callback_handler(
                         bot.send_message(chat.id, "Главы:").reply_markup(keyboard).await?;
                     }
                     Ok(Command::Chapter) => {
-                        bot.send_message(chat.id, split[1]);
+                        bot.send_message(chat.id, split[1]).await?;
                     }
                     _ => {}
                 }
