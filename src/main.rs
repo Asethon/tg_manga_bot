@@ -7,6 +7,7 @@ use teloxide::{
     },
     utils::command::BotCommand,
 };
+use teloxide::types::ParseMode::MarkdownV2;
 
 #[derive(BotCommand)]
 #[command(rename = "lowercase", description = "These commands are supported:")]
@@ -127,7 +128,7 @@ fn get_chapters() -> Vec<Chapter<'static>> {
     let mut chapters: Vec<Chapter> = vec![];
             let chapter1 = Chapter::new(1, 1, "1",
                                         "https://t.me/shrimp_from_the_island_bot/2");
-            let chapter2 = Chapter::new(2, 2, "2",
+            let chapter2 = Chapter::new(2, 1, "2",
                                         "https://t.me/shrimp_from_the_island_bot/6");
             chapters.push(chapter1);
             chapters.push(chapter2);
@@ -159,8 +160,9 @@ async fn callback_handler(
                             .into_iter()
                             .filter(|chapter| chapter.id == link_id)
                             .collect();
-                        let chapter = chapter.first();
-                        bot.send_message(chat.id, chapter.unwrap().link).await?;
+                        let chapter = chapter.first().unwrap();
+                        let link = format!("[Глава {}]({})", chapter.id, chapter.link);
+                        bot.edit_message_text(chat.id, id, link).parse_mode(MarkdownV2).await?;
                     }
                     _ => {}
                 }
