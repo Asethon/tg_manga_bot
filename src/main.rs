@@ -139,7 +139,7 @@ async fn callback_handler(
         match q.message {
             Some(Message { id, chat, .. }) => {
                 let split: Vec<&str> = link.split('?').collect();
-                match Option(split[0]) {
+                match split[0] {
                     Some(Command::Manga) => {
                         let id: i32 = split[1].parse::<i32>().unwrap();
                         let keyboard = make_keyboard(Some(id));
