@@ -139,9 +139,10 @@ async fn callback_handler(
         match q.message {
             Some(Message { id, chat, .. }) => {
                 let split: Vec<&str> = link.split('?').collect();
-                match split[0] {
+                match Option(split[0]) {
                     Some(Command::Manga) => {
-                        let keyboard = make_keyboard(Some(split[1]));
+                        let id: i32 = split[1].parse::<i32>().unwrap();
+                        let keyboard = make_keyboard(Some(id));
                         bot.send_message(m.chat.id, "Главы:").reply_markup(keyboard).await?;
                     }
                     Some(Command::Chapter) => {
