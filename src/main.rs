@@ -7,6 +7,7 @@ use teloxide::{
     },
     utils::command::BotCommand,
 };
+use teloxide::utils::command::ParseError;
 
 #[derive(BotCommand)]
 #[command(rename = "lowercase", description = "These commands are supported:")]
@@ -107,6 +108,7 @@ async fn message_handler(
             Err(_) => {
                 bot.send_message(m.chat.id, "Что-то пошло не так...").await?;
             }
+            _ => {}
         };
     }
 
@@ -162,6 +164,7 @@ async fn callback_handler(
                         bot.edit_message_text(chat.id, id, link).reply_markup(keyboard).parse_mode(MarkdownV2).await?;
                     }
                     Err(_) => {}
+                    _ => {}
                 }
             }
             None => ()
