@@ -83,7 +83,7 @@ struct Chapter<'b> {
 }
 
 impl<'b> Chapter<'b> {
-    fn new<'b>(id: i32, manga_id: i32, chapter_id: &'b str, link: &'b str) -> Chapter<'b> {
+    fn new(id: i32, manga_id: i32, chapter_id: &'b str, link: &'b str) -> Chapter<'b> {
         Chapter { id, manga_id, chapter_id, link }
     }
 }
