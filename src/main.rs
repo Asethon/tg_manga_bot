@@ -133,8 +133,7 @@ async fn callback_handler(
         match q.message {
             Some(Message { id, chat, .. }) => {
                 let split: Vec<&str> = command.split('?').collect();
-                let text = split.into_iter().count().to_string();
-                //let text = format!("link: {}, id: {}", split[0], split[1]);
+                let text = format!("link: {}", split[0]);
                 bot.send_message(chat.id, text).await?;
             }
             None => ()
