@@ -41,7 +41,7 @@ fn make_keyboard2() -> InlineKeyboardMarkup {
     let mut chapters: HashMap<&str, &str> = HashMap::new();
 
     chapters.insert("https://t.me/shrimp_from_the_island_bot/2", "Глава 1");
-    chapters.insert("https://legra.ph/Pik-boevyh-iskusstv-04-07-3", "Глава 2");
+    chapters.insert("https://t.me/shrimp_from_the_island_bot/6", "Глава 2");
 
     let row = chapters
         .into_iter()
@@ -106,7 +106,7 @@ async fn callback_handler(
                     let mut chapters: HashMap<String, &str> = HashMap::new();
 
                     chapters.insert(String::from("https://t.me/shrimp_from_the_island_bot/2"), "Глава 1");
-                    chapters.insert(String::from("https://legra.ph/Pik-boevyh-iskusstv-04-07-3"), "Глава 2");
+                    chapters.insert(String::from("https://t.me/shrimp_from_the_island_bot/6"), "Глава 2");
                     let chapter = *chapters.get(&command).unwrap();
                     let text = format!("[{}]({})", chapter, command);
                     bot.edit_message_text(chat.id, id, text).parse_mode(MarkdownV2).await?;
