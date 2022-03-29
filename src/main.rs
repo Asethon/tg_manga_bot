@@ -8,6 +8,7 @@ use teloxide::{
     utils::command::BotCommand,
 };
 use teloxide::types::ParseMode::MarkdownV2;
+use teloxide::utils::command::ParseError;
 
 #[derive(BotCommand)]
 #[command(rename = "lowercase", description = "These commands are supported:")]
@@ -153,7 +154,7 @@ async fn callback_handler(
                 match BotCommand::parse(split[0], "buttons") {
                     Ok(MangaCommand::Manga) => {
                         let keyboard = make_keyboard(Some(link_id));
-                        bot.send_message(chat.id, "Главы:").reply_markup(keyboard).await?;
+                        bot.edit_message_text(chat.id, id, "Главы:").reply_markup(keyboard).await?;
                     }
                     Ok(MangaCommand::Chapter) => {
                         let chapters = get_chapters();
@@ -166,6 +167,7 @@ async fn callback_handler(
                         let keyboard = make_keyboard(Some(chapter.manga_id));
                         bot.edit_message_text(chat.id, id, link).reply_markup(keyboard).parse_mode(MarkdownV2).await?;
                     }
+                    Err(_) => {}
                 }
             }
             None => ()
