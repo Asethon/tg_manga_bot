@@ -17,42 +17,77 @@ enum Command {
     Help,
     #[command(description = "Start")]
     Start,
+    #[command(description = "Main menu")]
+    Menu,
     #[command(description = "ping-pong")]
     Ping,
 }
 
-fn make_keyboard() -> InlineKeyboardMarkup {
+fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
+    let mut row = vec![];
+    match manga_id {
+        Some(id) => {
+            let mut chapters: Vec<Chapter> = vec![];
+            let chapter1 = Chapter::new(1, 1, "1",
+                                        "https://t.me/shrimp_from_the_island_bot/2");
+            let chapter2 = Chapter::new(2, 2, "2",
+                                        "https://t.me/shrimp_from_the_island_bot/6");
+            chapters.push(chapter1);
+            chapters.push(chapter2);
+            row = chapters
+                .into_iter()
+                .filter(|chapter| chapter.manga_id == id)
+                .map(|chapter| {
+                    InlineKeyboardButton::callback(
+                        "Глава " + chapter.chapter_id,
+                        chapter.link.to_owned(),
+                    )
+                })
+                .collect();
+        }
+        None => {
+            let mut manga_list: Vec<Manga> = vec![];
+            let manga = Manga::new(1, "Пик боевых искусств");
+            manga_list.push(manga);
+            row = manga_list
+                .into_iter()
+                .map(|manga| InlineKeyboardButton::callback(
+                    manga.title.to_owned(),
+                    "/manga/" + manga.id.to_owned())
+                )
+                .collect();
+        }
+    }
+
     let mut keyboard: Vec<Vec<InlineKeyboardButton>> = vec![];
-
-    let catalog = [
-        "Пик Боевых Искусств"
-    ];
-
-    let row = catalog
-        .iter()
-        .map(|&version| InlineKeyboardButton::callback(version.to_owned(), "/pick".to_owned()))
-        .collect();
 
     keyboard.push(row);
 
     InlineKeyboardMarkup::new(keyboard)
 }
 
-fn make_keyboard2() -> InlineKeyboardMarkup {
-    let mut keyboard: Vec<Vec<InlineKeyboardButton>> = vec![];
-    let mut chapters: HashMap<&str, &str> = HashMap::new();
+struct Manga<'a> {
+    id: i32,
+    title: &'a str,
+}
 
-    chapters.insert("https://t.me/shrimp_from_the_island_bot/2", "Глава 1");
-    chapters.insert("https://t.me/shrimp_from_the_island_bot/6", "Глава 2");
+impl Manga {
+    fn new(id: i32, title: &str) -> Self {
+        Manga { id, title }
+    }
+}
 
-    let row = chapters
-        .into_iter()
-        .map(|version| InlineKeyboardButton::callback(version.1.to_owned(), version.0.to_owned()))
-        .collect();
+struct Chapter<'a> {
+    id: i32,
+    manga_id: i32,
+    chapter_id: &'a str,
+    link: &'a str,
+}
 
-    keyboard.push(row);
-
-    InlineKeyboardMarkup::new(keyboard)
+impl Chapter {
+    fn new(id: i32, manga_id: i32, chapter_id: &str, link: &str) -> Self {
+        Chapter { id, manga_id, chapter_id, link }
+    }
 }
 
 /// Parse the text wrote on Telegram and check if that text is a valid command
@@ -69,8 +104,10 @@ async fn message_handler(
                 bot.send_message(m.chat.id, Command::descriptions()).await?;
             }
             Ok(Command::Start) => {
-                // Create a list of buttons and send them.
-                let keyboard = make_keyboard();
+                bot.send_message(m.chat.id, "Hi, send me /menu").await?;
+            }
+            Ok(Command::Menu) => {
+                let keyboard = make_keyboard(None);
                 bot.send_message(m.chat.id, "Каталог:").reply_markup(keyboard).await?;
             }
             Ok(Command::Ping) => {
@@ -97,18 +134,9 @@ async fn callback_handler(
     if let Some(command) = q.data {
         match q.message {
             Some(Message { id, chat, .. }) => {
-                if command == "/pick" {
-                    bot.edit_message_text(chat.id, id, "Выберите главу:")
-                        .reply_markup(make_keyboard2()).await?;
-                } else {
-                    let mut chapters: HashMap<String, &str> = HashMap::new();
-
-                    chapters.insert(String::from("https://t.me/shrimp_from_the_island_bot/2"), "Глава 1");
-                    chapters.insert(String::from("https://t.me/shrimp_from_the_island_bot/6"), "Глава 2");
-                    let chapter = *chapters.get(&command).unwrap();
-                    let text = format!("[{}]({})", chapter, command);
-                    bot.edit_message_text(chat.id, id, text).parse_mode(MarkdownV2).await?;
-                }
+                let split: Vec<&str> = command.split('?').collect();
+                let text = format!("link: {}, id: {}", split[0], split[1]);
+                bot.send_message(m.chat.id, text).await?;
             }
             None => ()
         }
