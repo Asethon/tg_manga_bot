@@ -160,7 +160,7 @@ async fn callback_handler(
                         let keyboard = make_keyboard(Some(chapter.manga_id));
                         bot.edit_message_text(chat.id, id, link).reply_markup(keyboard).parse_mode(MarkdownV2).await?;
                     }
-                    Err(_) => {}
+                    _ => {}
                 }
             }
             None => ()
