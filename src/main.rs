@@ -69,8 +69,8 @@ struct Manga<'a> {
     title: &'a str,
 }
 
-impl Manga {
-    fn new(id: i32, title: &'_ str) -> Manga {
+impl Manga<'a> {
+    fn new(id: i32, title: &'a str) -> Manga<'a> {
         Manga { id, title }
     }
 }
@@ -82,8 +82,8 @@ struct Chapter<'a> {
     link: &'a str,
 }
 
-impl Chapter {
-    fn new(id: i32, manga_id: i32, chapter_id: &'_ str, link: &'_ str) -> Chapter {
+impl Chapter<'a> {
+    fn new<'a>(id: i32, manga_id: i32, chapter_id: &'a str, link: &'a str) -> Chapter<'a> {
         Chapter { id, manga_id, chapter_id, link }
     }
 }
