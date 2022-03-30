@@ -3,10 +3,12 @@ use teloxide::{
     payloads::SendMessageSetters,
     prelude2::*,
     types::{
-        InlineKeyboardButton, InlineKeyboardMarkup, ParseMode::MarkdownV2
+        InlineKeyboardButton, InlineKeyboardMarkup, ParseMode::MarkdownV2,
     },
+    macros::DialogueState,
     utils::command::BotCommand,
 };
+use teloxide::dispatching2::dialogue::InMemStorage;
 
 use crate::database::chapter::ChapterRepository;
 use crate::database::database::DatabaseConnection;
@@ -115,7 +117,7 @@ async fn callback_handler(
                     }
                     "/chapter" => {
                         let client = DatabaseConnection::client().await?;
-                        let chapter= ChapterRepository::init(client).await.get_by_id(link_id).await?;
+                        let chapter = ChapterRepository::init(client).await.get_by_id(link_id).await?;
                         let link = format!("[Глава {}]({})", chapter.id.unwrap(), chapter.link);
                         let keyboard = make_keyboard(Some(chapter.manga_id)).await;
                         bot.edit_message_text(chat.id, id, link).reply_markup(keyboard).parse_mode(MarkdownV2).await?;
@@ -129,6 +131,19 @@ async fn callback_handler(
 
     Ok(())
 }
+#[derive(DialogueState, Clone)]
+#[handler_out(anyhow::Result<()>)]
+pub enum State {
+    #[handler(message_handler)]
+    Start,
+}
+
+impl Default for State {
+    fn default() -> Self {
+        Self::Start
+    }
+}
+
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -139,10 +154,15 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let bot = Bot::from_env().auto_send();
 
     let handler = dptree::entry()
-        .branch(Update::filter_message().endpoint(message_handler))
+        .branch(Update::filter_message()
+            .enter_dialogue::<Message, InMemStorage<State>, State>()
+            .dispatch_by::<State>()
+        )
         .branch(Update::filter_callback_query().endpoint(callback_handler));
 
-    Dispatcher::builder(bot, handler).build().setup_ctrlc_handler().dispatch().await;
+    Dispatcher::builder(bot, handler)
+        .dependencies(dptree::deps![InMemStorage::<State>::new()])
+        .build().setup_ctrlc_handler().dispatch().await;
 
     log::info!("Closing bot... Goodbye!");
 
