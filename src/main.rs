@@ -110,7 +110,7 @@ async fn callback_handler(
                         bot.edit_message_text(chat.id, id, "Главы:").reply_markup(keyboard).await?;
                     }
                     "/chapter" => {
-                        let chapter= ChapterRepository::get_by_id(&mut Default::default(), link_id)?;
+                        let chapter= ChapterRepository::get_by_id(&mut Default::default(), link_id).await?;
                         let link = format!("[Глава {}]({})", chapter.id.unwrap(), chapter.link);
                         let keyboard = make_keyboard(Some(chapter.manga_id));
                         bot.edit_message_text(chat.id, id, link).reply_markup(keyboard).parse_mode(MarkdownV2).await?;

@@ -1,11 +1,11 @@
-use tokio_postgres::{Client, NoTls};
+use tokio_postgres::{Client, NoTls, Error};
 
 pub struct DatabaseConnection {
     client: Client,
 }
 
 impl DatabaseConnection {
-    pub async fn client() -> Client {
+    pub async fn client() -> Result<Client, Error> {
         let login = dotenv::var("POSTGRES_LOGIN").unwrap();
         let password = dotenv::var("POSTGRES_PASSWORD").unwrap();
         let host = dotenv::var("POSTGRES_HOST").unwrap();
@@ -16,6 +16,7 @@ impl DatabaseConnection {
                 eprintln!("connection error: {}", e);
             }
         });
-        client
+
+        Ok(client)
     }
 }
