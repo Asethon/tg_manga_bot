@@ -56,10 +56,11 @@ impl<'a> MangaRepository <'a> {
     pub fn get_by_id(&mut self, id: i32) -> Result<Manga<'a>, Error> {
         let manga = self.client.query_one("SELECT * FROM manga WHERE id=$1", &[&id])?;
         let id: i32 = manga.get(0);
+        let title: &'a str = manga.get(2).as_ref();
         Ok(Manga {
             id: Option::from(id),
             group_id: manga.get(1),
-            title: manga.get(2).as_ref(),
+            title,
             description: manga.get(3),
             img: manga.get(4),
         })
