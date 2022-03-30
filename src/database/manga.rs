@@ -5,9 +5,9 @@ use database::database::DatabaseConnection;
 struct Manga<'a> {
     pub(crate) id: Option<i32>,
     pub(crate) group_id: i32,
-    pub(crate) title: &'a str,
-    pub(crate) description: &'a str,
-    pub(crate) img: &'a str,
+    pub(crate) title: String,
+    pub(crate) description: String,
+    pub(crate) img: String,
 }
 
 pub struct MangaRepository<'a> {
@@ -23,7 +23,7 @@ impl Default for MangaRepository<'_> {
 }
 
 impl<'a> MangaRepository <'a> {
-    pub fn new(&mut self, group_id: i32, title: &'a str, description: &'a str, img: &'a str) -> &Self {
+    pub fn new(&mut self, group_id: i32, title: String, description: String, img: String) -> &Self {
         self.manga = Option::from(Manga { id: None, group_id, title, description, img });
         self
     }
@@ -56,11 +56,10 @@ impl<'a> MangaRepository <'a> {
     pub fn get_by_id(&mut self, id: i32) -> Result<Manga<'a>, Error> {
         let manga = self.client.query_one("SELECT * FROM manga WHERE id=$1", &[&id])?;
         let id: i32 = manga.get(0);
-        let title: &'a str = manga.get(2).as_ref();
         Ok(Manga {
             id: Option::from(id),
             group_id: manga.get(1),
-            title,
+            title: manga.get(2),
             description: manga.get(3),
             img: manga.get(4),
         })
