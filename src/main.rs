@@ -10,9 +10,11 @@ use teloxide::{
 };
 use teloxide::dispatching2::dialogue::InMemStorage;
 
-use crate::database::chapter::ChapterRepository;
-use crate::database::database::DatabaseConnection;
-use crate::database::manga::{Manga, MangaRepository};
+use crate::database::{
+    chapter::ChapterRepository,
+    database::DatabaseConnection,
+    manga::MangaRepository,
+};
 
 mod database;
 
@@ -36,6 +38,7 @@ enum Command {
 async fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
     let row;
     let client = DatabaseConnection::client().await.unwrap();
+    let mut keyboard: Vec<Vec<InlineKeyboardButton>> = vec![];
     match manga_id {
         Some(id) => {
             row = ChapterRepository::init(client).await.list_by_manga_id(id).await.unwrap()
@@ -47,6 +50,10 @@ async fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
                     )
                 })
                 .collect();
+            keyboard.push(vec![InlineKeyboardButton::callback(
+                "Добавить главу".to_owned(),
+                "/chapter_add?".to_owned() + &*id.to_string(),
+            )]);
         }
         None => {
             row = MangaRepository::init(client).list().await.unwrap()
@@ -58,8 +65,6 @@ async fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
                 .collect();
         }
     }
-
-    let mut keyboard: Vec<Vec<InlineKeyboardButton>> = vec![];
 
     keyboard.push(row);
 
@@ -150,13 +155,6 @@ pub enum State {
     Description { title: String },
 }
 
-#[derive(DialogueState, Clone)]
-#[handler_out(anyhow::Result < () >)]
-pub enum StateChapters {
-    #[handler(message_handler)]
-    Start,
-}
-
 async fn add_manga_title_handler(
     bot: AutoSend<Bot>,
     m: Message,
@@ -198,6 +196,39 @@ impl Default for State {
     }
 }
 
+
+#[derive(DialogueState, Clone)]
+#[handler_out(anyhow::Result < () >)]
+pub enum StateChapters {
+    #[handler(message_handler)]
+    Start,
+    #[handler(chapter_id_handler)]
+    InsertChapterId,
+    #[handler(chapter_link_handler)]
+    InsertChapterLink { chapter_id: String },
+}
+
+async fn chapter_id_handler(
+    bot: AutoSend<Bot>,
+    q: CallbackQuery,
+    dialogue: MyDialogue,
+) -> anyhow::Result<()> {
+    if let Some(link) = q.data {
+        match q.message {
+            Some(Message { id, chat, .. }) => {
+                bot.send_message(chat.id, link).await?;
+            }
+            None => ()
+        }
+    }
+    Ok(())
+}
+
+impl Default for StateChapters {
+    fn default() -> Self {
+        Self::Start
+    }
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
