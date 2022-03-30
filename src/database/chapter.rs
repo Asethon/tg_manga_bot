@@ -17,14 +17,11 @@ pub struct ChapterRepository {
     chapter: Option<Chapter>,
 }
 
-impl Default for ChapterRepository {
-    fn default() -> Self {
-        let client = DatabaseConnection::client();
+impl ChapterRepository {
+    pub fn init(client: Client) -> Self {
         ChapterRepository { client, chapter: None }
     }
-}
 
-impl ChapterRepository {
     pub fn new(&mut self, manga_id: i32, translator_id: i32, chapter_id: String, link: String) -> &Self {
         self.chapter = Option::from(Chapter { id: None, manga_id, translator_id, chapter_id, link });
         self

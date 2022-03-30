@@ -9,6 +9,7 @@ use teloxide::{
 };
 
 use crate::database::chapter::ChapterRepository;
+use crate::database::database::DatabaseConnection;
 use crate::database::manga::MangaRepository;
 
 mod database;
@@ -28,9 +29,10 @@ enum Command {
 
 fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
     let row;
+    let client = DatabaseConnection::client().await?;
     match manga_id {
         Some(id) => {
-            row = ChapterRepository::list_by_manga_id(&mut Default::default(), id).unwrap()
+            row = ChapterRepository::init(client).list_by_manga_id(id).unwrap()
                 .into_iter()
                 .map(|chapter| {
                     InlineKeyboardButton::callback(
@@ -41,7 +43,7 @@ fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
                 .collect();
         }
         None => {
-            row = MangaRepository::list(&mut Default::default()).unwrap()
+            row = MangaRepository::init(client).list().unwrap()
                 .into_iter()
                 .map(|manga| InlineKeyboardButton::callback(
                     manga.title.to_owned(),
@@ -110,7 +112,8 @@ async fn callback_handler(
                         bot.edit_message_text(chat.id, id, "Главы:").reply_markup(keyboard).await?;
                     }
                     "/chapter" => {
-                        let chapter= ChapterRepository::get_by_id(&mut Default::default(), link_id).await?;
+                        let client = DatabaseConnection::client().await?;
+                        let chapter= ChapterRepository::init(client).get_by_id(link_id).await?;
                         let link = format!("[Глава {}]({})", chapter.id.unwrap(), chapter.link);
                         let keyboard = make_keyboard(Some(chapter.manga_id));
                         bot.edit_message_text(chat.id, id, link).reply_markup(keyboard).parse_mode(MarkdownV2).await?;

@@ -25,6 +25,10 @@ impl Default for MangaRepository {
 }
 
 impl MangaRepository  {
+    pub fn init(client: Client) -> Self {
+        MangaRepository { client, manga: None }
+    }
+
     pub fn new(&mut self, group_id: i32, title: String, description: String, img: String) -> &Self {
         self.manga = Option::from(Manga { id: None, group_id, title, description, img });
         self
