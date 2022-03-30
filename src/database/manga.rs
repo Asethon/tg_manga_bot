@@ -2,7 +2,7 @@ use crate::database;
 use postgres::{Client, Error};
 use database::database::DatabaseConnection;
 
-struct Manga {
+pub struct Manga {
     pub(crate) id: Option<i32>,
     pub(crate) group_id: i32,
     pub(crate) title: String,
