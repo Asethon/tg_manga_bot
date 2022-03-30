@@ -190,7 +190,7 @@ async fn add_manga_description_handler(
             MangaRepository::init(client)
                 .new(1, title, text.to_string(), "image".to_string())
                 .await
-                .push();
+                .push().await;
             dialogue.update(State::Start).await?;
         }
         None => ()
