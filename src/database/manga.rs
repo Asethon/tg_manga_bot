@@ -59,7 +59,7 @@ impl<'a> MangaRepository <'a> {
         Ok(Manga {
             id: Option::from(id),
             group_id: manga.get(1),
-            title: manga.get(2),
+            title: manga.get(2).as_ref(),
             description: manga.get(3),
             img: manga.get(4),
         })
