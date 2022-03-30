@@ -2,7 +2,7 @@ use crate::database;
 use postgres::{Client, Error};
 use database::database::DatabaseConnection;
 
-struct Manga<'a> {
+struct Manga {
     pub(crate) id: Option<i32>,
     pub(crate) group_id: i32,
     pub(crate) title: String,
@@ -10,9 +10,9 @@ struct Manga<'a> {
     pub(crate) img: String,
 }
 
-pub struct MangaRepository<'a> {
+pub struct MangaRepository {
     client: Client,
-    manga: Option<Manga<'a>>,
+    manga: Option<Manga>,
 }
 
 impl Default for MangaRepository<'_> {
@@ -22,7 +22,7 @@ impl Default for MangaRepository<'_> {
     }
 }
 
-impl<'a> MangaRepository <'a> {
+impl MangaRepository  {
     pub fn new(&mut self, group_id: i32, title: String, description: String, img: String) -> &Self {
         self.manga = Option::from(Manga { id: None, group_id, title, description, img });
         self
@@ -32,7 +32,7 @@ impl<'a> MangaRepository <'a> {
         self.manga.as_ref().unwrap()
     }
 
-    pub fn set(&mut self, manga: Manga<'a>) -> &Self {
+    pub fn set(&mut self, manga: Manga) -> &Self {
         self.manga = Option::from(manga);
         self
     }
@@ -53,7 +53,7 @@ impl<'a> MangaRepository <'a> {
         Ok(())
     }
 
-    pub fn get_by_id(&mut self, id: i32) -> Result<Manga<'a>, Error> {
+    pub fn get_by_id(&mut self, id: i32) -> Result<Manga, Error> {
         let manga = self.client.query_one("SELECT * FROM manga WHERE id=$1", &[&id])?;
         let id: i32 = manga.get(0);
         Ok(Manga {
@@ -75,7 +75,7 @@ impl<'a> MangaRepository <'a> {
         }
     }
 
-    pub fn list(&mut self) -> Result<Vec<Manga<'a>>, Error> {
+    pub fn list(&mut self) -> Result<Vec<Manga>, Error> {
         let mut manga_list = vec![];
         for row in self.client.query("select * from manga", &[])? {
             manga_list.push(Manga {
