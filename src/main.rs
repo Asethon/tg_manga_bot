@@ -177,10 +177,7 @@ async fn add_manga_description_handler(
         Some(text) => {
             bot.send_message(m.chat.id, "Send me description").await?;
             let client = DatabaseConnection::client().await?;
-            MangaRepository::init(client)
-                .new(1, title, text.to_string(), "image".to_string())
-                .await
-                .push().await?;
+            MangaRepository::init(client).new(1, title, text.to_string(), "image".to_string()).push().await?;
             dialogue.update(State::Start).await?;
         }
         None => ()
