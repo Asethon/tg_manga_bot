@@ -85,7 +85,7 @@ async fn message_handler(
             }
             Ok(Command::AddManga) => {
                 bot.send_message(m.chat.id, "Adding manga...").await?;
-                dialogue.update(State::AddMangaTitle).await?;
+                dialogue.update(State::AddManga).await?;
             }
             Ok(Command::Menu) => {
                 let keyboard = make_keyboard(None).await;
@@ -142,8 +142,10 @@ async fn callback_handler(
 #[derive(DialogueState, Clone)]
 #[handler_out(anyhow::Result < () >)]
 pub enum State {
-    #[handler(add_manga_handler)]
+    #[handler(message_handler)]
     Start,
+    #[handler(add_manga_handler)]
+    AddManga,
     #[handler(add_manga_title_handler)]
     AddMangaTitle,
     #[handler(add_manga_description_handler)]
@@ -190,7 +192,7 @@ async fn add_manga_description_handler(
             MangaRepository::init(client)
                 .new(1, title, text.to_string(), "image".to_string())
                 .await
-                .push().await;
+                .push().await?;
             dialogue.update(State::Start).await?;
         }
         None => ()
