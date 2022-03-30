@@ -224,6 +224,10 @@ async fn chapter_id_handler(
     Ok(())
 }
 
+async fn chapter_link_handler() -> anyhow::Result<()> {
+    Ok(())
+}
+
 impl Default for StateChapters {
     fn default() -> Self {
         Self::Start
