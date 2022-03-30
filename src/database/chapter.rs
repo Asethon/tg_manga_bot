@@ -56,12 +56,12 @@ impl ChapterRepository {
     pub fn get_by_id(&mut self, id: i32) -> Result<Chapter, Error> {
         let chapter = self.client.query_one("SELECT * FROM chapters WHERE id=$1", &[id])?;
 
-        Ok(Manga {
+        Ok(Chapter {
             id: Option::from(chapter.get(0)),
-            group_id: chapter.get(1),
-            title: chapter.get(2),
-            description: chapter.get(3),
-            img: chapter.get(4),
+            manga_id: chapter.get(1),
+            translator_id: chapter.get(2),
+            chapter_id: chapter.get(3),
+            link: chapter.get(4),
         })
     }
 
@@ -71,7 +71,7 @@ impl ChapterRepository {
                 self.client.execute("DELETE FROM chapters WHERE id=$1", &[id]);
                 Ok(())
             }
-            None => Error
+            None => ()
         }
     }
 

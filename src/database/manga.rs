@@ -23,7 +23,7 @@ impl Default for MangaRepository {
 }
 
 impl MangaRepository {
-    pub fn new(&mut self, group_id: i32, title: &str, description: &str, img: &str) -> &Self {
+    pub fn new(&mut self, group_id: i32, title: &'static str, description: &'static str, img: &'static str) -> &Self {
         self.manga = Option::from(Manga { id: None, group_id, title, description, img });
         self
     }
@@ -39,22 +39,22 @@ impl MangaRepository {
 
     pub fn push(&mut self) -> Result<(), Error> {
         let manga = self.manga.unwrap();
-        self.client.execute("INSERT INTO manga (), VALUES ($1, $2, $3, $4, $5)",
-                            &[manga.group_id, manga.title, manga.description, manga.img]);
+        self.client.execute("INSERT INTO manga (), VALUES ($1, $2, $3, $4)",
+                            &[&manga.group_id, &manga.title, &manga.description, &manga.img]);
         Ok(())
     }
 
     pub fn update(&mut self) -> Result<(), Error> {
         let manga = self.manga.unwrap();
         self.client.execute("UPDATE manga SET group_id=$1, title=$2, description=$3, img=$4",
-                            &[manga.group_id, manga.title, manga.description, manga.img],
+                            &[&manga.group_id, &manga.title, &manga.description, &manga.img]
         );
 
         Ok(())
     }
 
     pub fn get_by_id(&mut self, id: i32) -> Result<Manga, Error> {
-        let manga = self.client.query_one("SELECT * FROM manga WHERE id=$1", &[id])?;
+        let manga = self.client.query_one("SELECT * FROM manga WHERE id=$1", &[&id])?;
 
         Ok(Manga {
             id: Option::from(manga.get(0)),
@@ -68,10 +68,10 @@ impl MangaRepository {
     pub fn delete(&mut self) -> Result<(), Error> {
         match self.manga.unwrap().id {
             Some(id) => {
-                self.client.execute("DELETE FROM manga WHERE id=$1", &[id]);
+                self.client.execute("DELETE FROM manga WHERE id=$1", &[&id]);
                 Ok(())
             }
-            None => Error
+            None => ()
         }
     }
 
