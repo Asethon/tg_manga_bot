@@ -32,7 +32,7 @@ async fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
     let client = DatabaseConnection::client().await.unwrap();
     match manga_id {
         Some(id) => {
-            row = ChapterRepository::init(client).await.list_by_manga_id(id).unwrap()
+            row = ChapterRepository::init(client).await.list_by_manga_id(id).await.unwrap()
                 .into_iter()
                 .map(|chapter| {
                     InlineKeyboardButton::callback(
@@ -43,7 +43,7 @@ async fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
                 .collect();
         }
         None => {
-            row = MangaRepository::init(client).list().unwrap()
+            row = MangaRepository::init(client).list().await.unwrap()
                 .into_iter()
                 .map(|manga| InlineKeyboardButton::callback(
                     manga.title.to_owned(),
@@ -113,7 +113,7 @@ async fn callback_handler(
                     }
                     "/chapter" => {
                         let client = DatabaseConnection::client().await?;
-                        let chapter= ChapterRepository::init(client).get_by_id(link_id).await?;
+                        let chapter= ChapterRepository::init(client).await.get_by_id(link_id).await?;
                         let link = format!("[Глава {}]({})", chapter.id.unwrap(), chapter.link);
                         let keyboard = make_keyboard(Some(chapter.manga_id));
                         bot.edit_message_text(chat.id, id, link).reply_markup(keyboard).parse_mode(MarkdownV2).await?;
