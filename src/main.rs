@@ -23,8 +23,8 @@ enum Command {
     Start,
     #[command(description = "Main menu")]
     Menu,
-    #[command(description = "Add manga")]
-    AddManga,
+    // #[command(description = "Add manga")]
+    // AddManga,
     #[command(description = "ping-pong")]
     Ping,
 }
