@@ -49,8 +49,7 @@ async fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
                 .collect();
         }
         None => {
-            let manga = vec![Manga { id: Some(1), group_id: 0, title: "Title".to_string(), description: "Desc".to_string(), img: "image".to_string() }];
-            row = manga
+            row = MangaRepository::init(client).list().await.unwrap()
                 .into_iter()
                 .map(|manga| InlineKeyboardButton::callback(
                     manga.title.to_owned(),
@@ -83,6 +82,7 @@ async fn message_handler(
             }
             Ok(Command::Start) => {
                 bot.send_message(m.chat.id, "Hi, send me /menu").await?;
+                dialogue.update(State::AddManga).await?;
             }
             Ok(Command::Menu) => {
                 let keyboard = make_keyboard(None).await;
@@ -140,6 +140,18 @@ async fn callback_handler(
 pub enum State {
     #[handler(message_handler)]
     Start,
+    #[handler(add_manga_handler)]
+    AddManga,
+}
+
+async fn add_manga_handler(
+    bot: AutoSend<Bot>,
+    m: Message,
+    dialogue: MyDialogue,
+) -> anyhow::Result<()> {
+    bot.send_message(m.chat.id, "Hi, i am handler").await?;
+    dialogue.update(State::Start).await?;
+    Ok(())
 }
 
 impl Default for State {
