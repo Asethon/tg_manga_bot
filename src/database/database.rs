@@ -16,6 +16,6 @@ impl DatabaseConnection {
                 eprintln!("connection error: {}", e);
             }
         });
-        client.unwrap()
+        client
     }
 }

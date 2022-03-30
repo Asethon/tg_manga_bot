@@ -39,14 +39,14 @@ impl ChapterRepository {
         self
     }
 
-    pub fn push(&mut self) -> Result<(), Error> {
+    pub async fn push(&mut self) -> Result<(), Error> {
         let chapter = self.chapter.as_ref().unwrap();
         self.client.execute("INSERT INTO chapters (), VALUES ($1, $2, $3, $4, $5)",
                             &[&chapter.manga_id, &chapter.translator_id, &chapter.chapter_id, &chapter.link]).await?;
         Ok(())
     }
 
-    pub fn update(&mut self) -> Result<(), Error> {
+    pub async fn update(&mut self) -> Result<(), Error> {
         let chapter = self.chapter.as_ref().unwrap();
         self.client.execute("UPDATE chapters SET group_id=$1, title=$2, description=$3, img=$4",
                             &[&chapter.manga_id, &chapter.translator_id, &chapter.chapter_id, &chapter.link]).await?;
@@ -54,7 +54,7 @@ impl ChapterRepository {
         Ok(())
     }
 
-    pub fn get_by_id(&mut self, id: i32) -> Result<Chapter, Error> {
+    pub async fn get_by_id(&mut self, id: i32) -> Result<Chapter, Error> {
         let chapter = self.client.query_one("SELECT * FROM chapters WHERE id=$1", &[&id]).await?;
         let id: i32 = chapter.get(0);
         Ok(Chapter {
@@ -66,7 +66,7 @@ impl ChapterRepository {
         })
     }
 
-    pub fn delete(&mut self) -> Result<(), Error> {
+    pub async fn delete(&mut self) -> Result<(), Error> {
         match self.chapter.as_ref().unwrap().id {
             Some(id) => {
                 self.client.execute("DELETE FROM chapters WHERE id=$1", &[&id]).await?;
@@ -76,7 +76,7 @@ impl ChapterRepository {
         }
     }
 
-    pub fn list(&mut self) -> Result<Vec<Chapter>, Error> {
+    pub async fn list(&mut self) -> Result<Vec<Chapter>, Error> {
         let mut chapter_list = vec![];
         for row in self.client.query("select * from chapters", &[]).await? {
             let id: i32 = row.get(0);
@@ -91,7 +91,7 @@ impl ChapterRepository {
         Ok(chapter_list)
     }
 
-    pub fn list_by_manga_id(&mut self, id: i32) -> Result<Vec<Chapter>, Error> {
+    pub async fn list_by_manga_id(&mut self, id: i32) -> Result<Vec<Chapter>, Error> {
         let mut chapter_list = vec![];
         for row in self.client.query("select * from chapters WHERE manga_id=$1", &[&id]).await? {
             let id: i32 = row.get(0);
