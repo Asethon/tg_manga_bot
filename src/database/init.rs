@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use tokio_postgres::Error;
 use crate::database::database::DatabaseConnection;
 
