@@ -8,7 +8,6 @@ use teloxide::{
     },
     utils::command::BotCommand,
 };
-use clap::Parser;
 
 use crate::database::chapter::ChapterRepository;
 use crate::database::manga::MangaRepository;
@@ -125,11 +124,6 @@ async fn callback_handler(
     }
 
     Ok(())
-}
-
-#[derive(Parser)]
-struct Cli {
-    migrate: String
 }
 
 #[tokio::main]
