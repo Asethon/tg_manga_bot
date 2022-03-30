@@ -29,10 +29,10 @@ enum Command {
 
 async fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
     let row;
-    let client = DatabaseConnection::client().await?;
+    let client = DatabaseConnection::client().await.unwrap();
     match manga_id {
         Some(id) => {
-            row = ChapterRepository::init(client).list_by_manga_id(id).unwrap()
+            row = ChapterRepository::init(client).await.list_by_manga_id(id).unwrap()
                 .into_iter()
                 .map(|chapter| {
                     InlineKeyboardButton::callback(
