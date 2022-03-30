@@ -32,7 +32,7 @@ impl<'a> MangaRepository <'a> {
         self.manga.as_ref().unwrap()
     }
 
-    pub fn set(&mut self, manga: Manga) -> &Self {
+    pub fn set(&mut self, manga: Manga<'a>) -> &Self {
         self.manga = Option::from(manga);
         self
     }
@@ -53,7 +53,7 @@ impl<'a> MangaRepository <'a> {
         Ok(())
     }
 
-    pub fn get_by_id(&mut self, id: i32) -> Result<Manga, Error> {
+    pub fn get_by_id(&mut self, id: i32) -> Result<Manga<'a>, Error> {
         let manga = self.client.query_one("SELECT * FROM manga WHERE id=$1", &[&id])?;
         let id: i32 = manga.get(0);
         Ok(Manga {
@@ -75,7 +75,7 @@ impl<'a> MangaRepository <'a> {
         }
     }
 
-    pub fn list(&mut self) -> Result<Vec<Manga>, Error> {
+    pub fn list(&mut self) -> Result<Vec<Manga<'a>>, Error> {
         let mut manga_list = vec![];
         for row in self.client.query("select * from manga", &[])? {
             manga_list.push(Manga {
