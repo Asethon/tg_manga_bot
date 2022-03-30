@@ -22,7 +22,7 @@ impl MangaRepository  {
         MangaRepository { client, manga: None }
     }
 
-    pub async fn new(&mut self, group_id: i32, title: String, description: String, img: String) -> &Self {
+    pub async fn new(&mut self, group_id: i32, title: String, description: String, img: String) -> &mut Self {
         self.manga = Option::from(Manga { id: None, group_id, title, description, img });
         self
     }
