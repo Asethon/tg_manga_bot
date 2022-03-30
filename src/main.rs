@@ -18,7 +18,8 @@ use crate::database::{
 
 mod database;
 
-type MyDialogue = Dialogue<State, InMemStorage<State>>;
+type MangaDialogue = Dialogue<State, InMemStorage<State>>;
+type ChapterDialogue = Dialogue<StateChapters, InMemStorage<StateChapters>>;
 
 #[derive(BotCommand)]
 #[command(rename = "lowercase", description = "These commands are supported:")]
@@ -77,7 +78,7 @@ async fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
 async fn message_handler(
     bot: AutoSend<Bot>,
     m: Message,
-    dialogue: MyDialogue,
+    dialogue: MangaDialogue,
 ) -> anyhow::Result<()> {
     if let Some(text) = m.text() {
         match BotCommand::parse(text, "buttons") {
@@ -116,7 +117,7 @@ async fn message_handler(
 async fn callback_handler(
     q: CallbackQuery,
     bot: AutoSend<Bot>,
-    dialogue: MyDialogue,
+    dialogue: ChapterDialogue,
 ) -> anyhow::Result<()> {
     if let Some(link) = q.data {
         match q.message {
@@ -136,7 +137,7 @@ async fn callback_handler(
                         bot.edit_message_text(chat.id, id, link).reply_markup(keyboard).parse_mode(MarkdownV2).await?;
                     }
                     "/chapter_add" => {
-                        bot.send_message("Add chapter...");
+                        bot.send_message(chat.id,"Add chapter...");
                         dialogue.update(StateChapters::InsertChapterId);
                     }
                     _ => {}
@@ -163,7 +164,7 @@ pub enum State {
 async fn add_manga_title_handler(
     bot: AutoSend<Bot>,
     m: Message,
-    dialogue: MyDialogue,
+    dialogue: MangaDialogue,
 ) -> anyhow::Result<()> {
     match m.text() {
         Some(text) => {
@@ -180,7 +181,7 @@ async fn add_manga_title_handler(
 async fn add_manga_description_handler(
     bot: AutoSend<Bot>,
     m: Message,
-    dialogue: MyDialogue,
+    dialogue: MangaDialogue,
     (title, ): (String, ),
 ) -> anyhow::Result<()> {
     match m.text() {
@@ -216,7 +217,7 @@ pub enum StateChapters {
 async fn chapter_id_handler(
     bot: AutoSend<Bot>,
     q: CallbackQuery,
-    dialogue: MyDialogue,
+    dialogue: ChapterDialogue,
 ) -> anyhow::Result<()> {
     if let Some(link) = q.data {
         match q.message {
