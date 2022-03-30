@@ -150,6 +150,13 @@ pub enum State {
     Description { title: String },
 }
 
+#[derive(DialogueState), Clone]
+#[handler_out(anyhow::Result < () >)]
+pub enum StateChapters {
+    #[handler(message_handler)]
+    Start,
+}
+
 async fn add_manga_title_handler(
     bot: AutoSend<Bot>,
     m: Message,
