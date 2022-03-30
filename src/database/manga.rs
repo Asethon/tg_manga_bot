@@ -53,7 +53,7 @@ impl<'a> MangaRepository <'a> {
         Ok(())
     }
 
-    pub fn get_by_id<'a>(&mut self, id: i32) -> Result<Manga<'a>, Error> {
+    pub fn get_by_id(&mut self, id: i32) -> Result<Manga<'a>, Error> {
         let manga = self.client.query_one("SELECT * FROM manga WHERE id=$1", &[&id])?;
         let id: i32 = manga.get(0);
         Ok(Manga {
