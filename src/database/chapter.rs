@@ -28,8 +28,8 @@ impl<'a> ChapterRepository<'a> {
         self
     }
 
-    pub fn get(&mut self) -> Chapter<'a> {
-        self.chapter.unwrap()
+    pub fn get(&mut self) -> &Chapter<'a> {
+        self.chapter.as_ref().unwrap()
     }
 
     pub fn set(&mut self, chapter: Chapter<'a>) -> &Self {
@@ -38,14 +38,14 @@ impl<'a> ChapterRepository<'a> {
     }
 
     pub fn push(&mut self) -> Result<(), Error> {
-        let chapter = self.chapter.unwrap();
+        let chapter = self.chapter.as_ref().unwrap();
         self.client.execute("INSERT INTO chapters (), VALUES ($1, $2, $3, $4, $5)",
                             &[&chapter.manga_id, &chapter.translator_id, &chapter.chapter_id, &chapter.link]);
         Ok(())
     }
 
     pub fn update(&mut self) -> Result<(), Error> {
-        let chapter = self.chapter.unwrap();
+        let chapter = self.chapter.as_ref().unwrap();
         self.client.execute("UPDATE chapters SET group_id=$1, title=$2, description=$3, img=$4",
                             &[&chapter.manga_id, &chapter.translator_id, &chapter.chapter_id, &chapter.link]);
 
@@ -65,7 +65,7 @@ impl<'a> ChapterRepository<'a> {
     }
 
     pub fn delete(&mut self) -> Result<(), Error> {
-        match self.chapter.unwrap().id {
+        match self.chapter.as_ref().unwrap().id {
             Some(id) => {
                 self.client.execute("DELETE FROM chapters WHERE id=$1", &[&id]);
                 Ok(())
