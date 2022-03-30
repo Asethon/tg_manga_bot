@@ -38,7 +38,7 @@ impl MangaRepository  {
 
     pub async fn push(&self) -> Result<(), Error> {
         let manga = self.manga.as_ref().unwrap();
-        self.client.execute("INSERT INTO manga (group_id, title, description, img), VALUES ($1, $2, $3, $4)",
+        self.client.execute("INSERT INTO manga (group_id, title, description, img) VALUES ($1, $2, $3, $4)",
                             &[&manga.group_id, &manga.title, &manga.description, &manga.img]).await?;
         Ok(())
     }
