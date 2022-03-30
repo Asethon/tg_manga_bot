@@ -84,8 +84,8 @@ async fn message_handler(
                 bot.send_message(m.chat.id, "Hi, send me /menu").await?;
             }
             Ok(Command::AddManga) => {
-                bot.send_message(m.chat.id, "Adding manga...").await?;
-                dialogue.update(State::AddManga).await?;
+                bot.send_message(m.chat.id, "Adding manga. Send me title").await?;
+                dialogue.update(State::AddMangaTitle).await?;
             }
             Ok(Command::Menu) => {
                 let keyboard = make_keyboard(None).await;
@@ -144,22 +144,10 @@ async fn callback_handler(
 pub enum State {
     #[handler(message_handler)]
     Start,
-    #[handler(add_manga_handler)]
-    AddManga,
     #[handler(add_manga_title_handler)]
     AddMangaTitle,
     #[handler(add_manga_description_handler)]
     Description { title: String },
-}
-
-async fn add_manga_handler(
-    bot: AutoSend<Bot>,
-    m: Message,
-    dialogue: MyDialogue,
-) -> anyhow::Result<()> {
-    bot.send_message(m.chat.id, "Adding manga. Send me title").await?;
-    dialogue.update(State::AddMangaTitle).await?;
-    Ok(())
 }
 
 async fn add_manga_title_handler(
