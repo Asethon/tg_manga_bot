@@ -107,7 +107,7 @@ async fn message_handler(
 async fn callback_handler(
     q: CallbackQuery,
     bot: AutoSend<Bot>,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> anyhow::Result<()> {
     if let Some(link) = q.data {
         match q.message {
             Some(Message { id, chat, .. }) => {
