@@ -116,6 +116,7 @@ async fn message_handler(
 async fn callback_handler(
     q: CallbackQuery,
     bot: AutoSend<Bot>,
+    dialogue: MyDialogue,
 ) -> anyhow::Result<()> {
     if let Some(link) = q.data {
         match q.message {
@@ -133,6 +134,10 @@ async fn callback_handler(
                         let link = format!("[Глава {}]({})", chapter.id.unwrap(), chapter.link);
                         let keyboard = make_keyboard(Some(chapter.manga_id)).await;
                         bot.edit_message_text(chat.id, id, link).reply_markup(keyboard).parse_mode(MarkdownV2).await?;
+                    }
+                    "/chapter_add" => {
+                        bot.send_message("Add chapter...");
+                        dialogue.update(StateChapters::InsertChapterId);
                     }
                     _ => {}
                 }
@@ -246,7 +251,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let handler = dptree::entry()
         .branch(Update::filter_message()
             .enter_dialogue::<Message, InMemStorage<State>, State>()
+            .enter_dialogue::<Message, InMemStorage<StateChapters>, StateChapters>()
             .dispatch_by::<State>()
+            .dispatch_by::<StateChapters>()
         )
         .branch(Update::filter_callback_query().endpoint(callback_handler));
 
