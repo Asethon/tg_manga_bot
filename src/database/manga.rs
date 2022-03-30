@@ -15,7 +15,7 @@ pub struct MangaRepository {
     manga: Option<Manga>,
 }
 
-impl Default for MangaRepository<'_> {
+impl Default for MangaRepository {
     fn default() -> Self {
         let client = DatabaseConnection::client();
         MangaRepository { client, manga: None }
