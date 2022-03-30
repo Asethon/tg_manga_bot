@@ -207,7 +207,7 @@ impl Default for State {
 #[handler_out(anyhow::Result < () >)]
 pub enum StateChapters {
     #[handler(message_handler)]
-    Start,
+    Start { state: State },
     #[handler(chapter_id_handler)]
     InsertChapterId,
     #[handler(chapter_link_handler)]
