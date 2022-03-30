@@ -66,7 +66,7 @@ impl MangaRepository  {
     }
 
     pub fn delete(&mut self) -> Result<(), Error> {
-        match self.manga.unwrap().id {
+        match self.manga.as_ref().unwrap().id {
             Some(id) => {
                 self.client.execute("DELETE FROM manga WHERE id=$1", &[&id]);
                 Ok(())
