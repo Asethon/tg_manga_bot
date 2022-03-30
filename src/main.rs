@@ -73,7 +73,7 @@ async fn message_handler(
     bot: AutoSend<Bot>,
     m: Message,
     dialogue: MyDialogue,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> anyhow::Result<()> {
     if let Some(text) = m.text() {
         match BotCommand::parse(text, "buttons") {
             Ok(Command::Help) => {
@@ -107,7 +107,6 @@ async fn message_handler(
 async fn callback_handler(
     q: CallbackQuery,
     bot: AutoSend<Bot>,
-    dialogue: MyDialogue,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     if let Some(link) = q.data {
         match q.message {
@@ -140,8 +139,6 @@ async fn callback_handler(
 pub enum State {
     #[handler(message_handler)]
     Start,
-    #[handler(callback_handler)]
-    Callback,
 }
 
 impl Default for State {
@@ -159,9 +156,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let bot = Bot::from_env().auto_send();
 
-    let handler = Update::filter_message()
+    let handler = dptree::entry()
+        .branch(Update::filter_message()
             .enter_dialogue::<Message, InMemStorage<State>, State>()
-            .dispatch_by::<State>();
+            .dispatch_by::<State>()
+        )
+        .branch(Update::filter_callback_query().endpoint(callback_handler));
 
     Dispatcher::builder(bot, handler)
         .dependencies(dptree::deps![InMemStorage::<State>::new()])
