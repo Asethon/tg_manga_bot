@@ -137,8 +137,8 @@ async fn callback_handler(
                         bot.edit_message_text(chat.id, id, link).reply_markup(keyboard).parse_mode(MarkdownV2).await?;
                     }
                     "/chapter_add" => {
-                        bot.send_message(chat.id,"Add chapter...");
-                        dialogue.update(StateChapters::InsertChapterId);
+                        bot.send_message(chat.id,"Add chapter...").await?;
+                        dialogue.update(StateChapters::InsertChapterId).await?;
                     }
                     _ => {}
                 }
