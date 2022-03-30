@@ -22,8 +22,8 @@ impl Default for MangaRepository<'_> {
     }
 }
 
-impl MangaRepository <'_> {
-    pub fn new<'a>(&mut self, group_id: i32, title: &'a str, description: &'a str, img: &'a str) -> &Self {
+impl<'a> MangaRepository <'a> {
+    pub fn new(&mut self, group_id: i32, title: &'a str, description: &'a str, img: &'a str) -> &Self {
         self.manga = Option::from(Manga { id: None, group_id, title, description, img });
         self
     }
