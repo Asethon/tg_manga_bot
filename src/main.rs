@@ -130,11 +130,11 @@ async fn callback_handler(
 async fn main() -> Result<(), Box<dyn Error>> {
     let migrate = std::env::args().nth(1);
     match migrate {
-        None => {}
         Some(_) => {
             database::init::create_tables();
             exit(0);
         }
+        None => {}
     }
     pretty_env_logger::init();
     log::info!("Starting bot...");
