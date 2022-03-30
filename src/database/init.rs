@@ -1,13 +1,13 @@
 use tokio_postgres::Error;
 use crate::database::database::DatabaseConnection;
 
-pub fn create_tables() {
+pub async fn create_tables() {
     create_table_manga()?;
     create_table_chapter()?;
 }
 
-fn create_table_manga() -> Result<(), Error>{
-    let mut client = DatabaseConnection::client();
+async fn create_table_manga() -> Result<(), Error>{
+    let mut client = DatabaseConnection::client().await?;
     client.batch_execute("
         CREATE TABLE IF NOT EXISTS manga (
             id              SERIAL PRIMARY KEY,
@@ -19,8 +19,8 @@ fn create_table_manga() -> Result<(), Error>{
     ")
 }
 
-fn create_table_chapter() -> Result<(), Error>{
-    let mut client = DatabaseConnection::client();
+async fn create_table_chapter() -> Result<(), Error>{
+    let mut client = DatabaseConnection::client().await?;
     client.batch_execute("
         CREATE TABLE IF NOT EXISTS manga (
             id              SERIAL PRIMARY KEY,

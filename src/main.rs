@@ -77,7 +77,7 @@ async fn message_handler(
                 bot.send_message(m.chat.id, "Hi, send me /menu").await?;
             }
             Ok(Command::Menu) => {
-                let keyboard = make_keyboard(None);
+                let keyboard = make_keyboard(None).await;
                 bot.send_message(m.chat.id, "Каталог:").reply_markup(keyboard).await?;
             }
             Ok(Command::Ping) => {
@@ -108,14 +108,14 @@ async fn callback_handler(
                 let link_id: i32 = split[1].parse::<i32>().unwrap();
                 match split[0] {
                     "/manga" => {
-                        let keyboard = make_keyboard(Some(link_id));
+                        let keyboard = make_keyboard(Some(link_id)).await;
                         bot.edit_message_text(chat.id, id, "Главы:").reply_markup(keyboard).await?;
                     }
                     "/chapter" => {
                         let client = DatabaseConnection::client().await?;
                         let chapter= ChapterRepository::init(client).await.get_by_id(link_id).await?;
                         let link = format!("[Глава {}]({})", chapter.id.unwrap(), chapter.link);
-                        let keyboard = make_keyboard(Some(chapter.manga_id));
+                        let keyboard = make_keyboard(Some(chapter.manga_id)).await;
                         bot.edit_message_text(chat.id, id, link).reply_markup(keyboard).parse_mode(MarkdownV2).await?;
                     }
                     _ => {}
