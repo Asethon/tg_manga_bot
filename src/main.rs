@@ -151,7 +151,7 @@ impl Default for State {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    database::init::create_tables();
+    database::init::create_tables().await;
     pretty_env_logger::init();
     log::info!("Starting bot...");
     dotenv::dotenv().ok();
