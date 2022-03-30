@@ -29,22 +29,22 @@ fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
     let row;
     match manga_id {
         Some(id) => {
-            row = ChapterRepository::list_by_manga_id(&mut Default::default(), id)?
+            row = ChapterRepository::list_by_manga_id(&mut Default::default(), id).unwrap()
                 .into_iter()
                 .map(|chapter| {
                     InlineKeyboardButton::callback(
                         "Глава ".to_owned() + chapter.chapter_id,
-                        "/chapter?".to_owned() + &chapter.id.to_string(),
+                        "/chapter?".to_owned() + &chapter.id.unwrap().to_string(),
                     )
                 })
                 .collect();
         }
         None => {
-            row = MangaRepository::list(&mut Default::default())?
+            row = MangaRepository::list(&mut Default::default()).unwrap()
                 .into_iter()
                 .map(|manga| InlineKeyboardButton::callback(
                     manga.title.to_owned(),
-                    "/manga?".to_owned() + &manga.id.to_string())
+                    "/manga?".to_owned() + &manga.id.unwrap().to_string())
                 )
                 .collect();
         }

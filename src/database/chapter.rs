@@ -70,15 +70,16 @@ impl ChapterRepository {
                 self.client.execute("DELETE FROM chapters WHERE id=$1", &[&id]);
                 Ok(())
             }
-            None => ()
+            None => Ok(())
         }
     }
 
     pub fn list(&mut self) -> Result<Vec<Chapter>, Error> {
         let mut chapter_list = vec![];
         for row in self.client.query("select * from chapters", &[])? {
+            let id: i32 = row.get(0);
             chapter_list.push(Chapter {
-                id: row.get(0),
+                id: Option::from(id),
                 manga_id: row.get(1),
                 translator_id: row.get(2),
                 chapter_id: row.get(3),
@@ -90,9 +91,10 @@ impl ChapterRepository {
 
     pub fn list_by_manga_id(&mut self, id: i32) -> Result<Vec<Chapter>, Error> {
         let mut chapter_list = vec![];
-        for row in self.client.query("select * from chapters WHERE manga_id=$1", &[id])? {
+        for row in self.client.query("select * from chapters WHERE manga_id=$1", &[&id])? {
+            let id: i32 = row.get(0);
             chapter_list.push(Chapter {
-                id: row.get(0),
+                id: Option::from(id),
                 manga_id: row.get(1),
                 translator_id: row.get(2),
                 chapter_id: row.get(3),
