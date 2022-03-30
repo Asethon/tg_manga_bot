@@ -24,7 +24,7 @@ async fn create_table_manga() -> Result<(), Error>{
 async fn create_table_chapter() -> Result<(), Error>{
     let mut client = DatabaseConnection::client().await?;
     client.batch_execute("
-        CREATE TABLE IF NOT EXISTS manga (
+        CREATE TABLE IF NOT EXISTS chapters (
             id              SERIAL PRIMARY KEY,
             manga_id        INTEGER NOT NULL,
             translator_id   INTEGER NOT NULL,
