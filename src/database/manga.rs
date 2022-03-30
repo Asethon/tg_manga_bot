@@ -27,7 +27,7 @@ impl MangaRepository  {
         self
     }
 
-    pub fn get(&mut self) -> &Manga {
+    pub fn get(&self) -> &Manga {
         self.manga.as_ref().unwrap()
     }
 
@@ -36,14 +36,14 @@ impl MangaRepository  {
         self
     }
 
-    pub async fn push(&mut self) -> Result<(), Error> {
+    pub async fn push(&self) -> Result<(), Error> {
         let manga = self.manga.as_ref().unwrap();
         self.client.execute("INSERT INTO manga (), VALUES ($1, $2, $3, $4)",
                             &[&manga.group_id, &manga.title, &manga.description, &manga.img]).await?;
         Ok(())
     }
 
-    pub async fn update(&mut self) -> Result<(), Error> {
+    pub async fn update(&self) -> Result<(), Error> {
         let manga = self.manga.as_ref().unwrap();
         self.client.execute("UPDATE manga SET group_id=$1, title=$2, description=$3, img=$4",
                             &[&manga.group_id, &manga.title, &manga.description, &manga.img]
@@ -52,7 +52,7 @@ impl MangaRepository  {
         Ok(())
     }
 
-    pub async fn get_by_id(&mut self, id: i32) -> Result<Manga, Error> {
+    pub async fn get_by_id(&self, id: i32) -> Result<Manga, Error> {
         let manga = self.client.query_one("SELECT * FROM manga WHERE id=$1", &[&id]).await?;
         let id: i32 = manga.get(0);
         Ok(Manga {
@@ -64,7 +64,7 @@ impl MangaRepository  {
         })
     }
 
-    pub async fn delete(&mut self) -> Result<(), Error> {
+    pub async fn delete(&self) -> Result<(), Error> {
         match self.manga.as_ref().unwrap().id {
             Some(id) => {
                 self.client.execute("DELETE FROM manga WHERE id=$1", &[&id]).await?;
@@ -74,7 +74,7 @@ impl MangaRepository  {
         }
     }
 
-    pub async fn list(&mut self) -> Result<Vec<Manga>, Error> {
+    pub async fn list(&self) -> Result<Vec<Manga>, Error> {
         let mut manga_list = vec![];
         for row in self.client.query("select * from manga", &[]).await? {
             manga_list.push(Manga {
