@@ -55,7 +55,7 @@ impl MangaRepository {
 
     pub fn get_by_id(&mut self, id: i32) -> Result<Manga, Error> {
         let manga = self.client.query_one("SELECT * FROM manga WHERE id=$1", &[&id])?;
-        let id = manga.get(0).parse().unwrap();
+        let id = manga.get::<'a, I, T>(0).parse().unwrap();
         Ok(Manga {
             id,
             group_id: manga.get(1),
