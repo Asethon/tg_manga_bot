@@ -71,7 +71,7 @@ impl MangaRepository {
                 self.client.execute("DELETE FROM manga WHERE id=$1", &[&id]);
                 Ok(())
             }
-            None => ()
+            None => Ok(())
         }
     }
 

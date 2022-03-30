@@ -23,7 +23,7 @@ impl Default for ChapterRepository {
 }
 
 impl ChapterRepository {
-    pub fn new(&mut self, manga_id: i32, translator_id: i32, chapter_id: &str, link: &str) -> &Self {
+    pub fn new(&mut self, manga_id: i32, translator_id: i32, chapter_id: &'static str, link: &'static str) -> &Self {
         self.chapter = Option::from(Chapter { id: None, manga_id, translator_id, chapter_id, link });
         self
     }
@@ -40,24 +40,23 @@ impl ChapterRepository {
     pub fn push(&mut self) -> Result<(), Error> {
         let chapter = self.chapter.unwrap();
         self.client.execute("INSERT INTO chapters (), VALUES ($1, $2, $3, $4, $5)",
-                            &[chapter.manga_id, chapter.translator_id, chapter.chapter_id, chapter.link]);
+                            &[&chapter.manga_id, &chapter.translator_id, &chapter.chapter_id, &chapter.link]);
         Ok(())
     }
 
     pub fn update(&mut self) -> Result<(), Error> {
         let chapter = self.chapter.unwrap();
         self.client.execute("UPDATE chapters SET group_id=$1, title=$2, description=$3, img=$4",
-                            &[chapter.manga_id, chapter.translator_id, chapter.chapter_id, chapter.link],
-        );
+                            &[&chapter.manga_id, &chapter.translator_id, &chapter.chapter_id, &chapter.link]);
 
         Ok(())
     }
 
     pub fn get_by_id(&mut self, id: i32) -> Result<Chapter, Error> {
-        let chapter = self.client.query_one("SELECT * FROM chapters WHERE id=$1", &[id])?;
-
+        let chapter = self.client.query_one("SELECT * FROM chapters WHERE id=$1", &[&id])?;
+        let id: i32 = chapter.get(0);
         Ok(Chapter {
-            id: Option::from(chapter.get(0)),
+            id: Option::from(id),
             manga_id: chapter.get(1),
             translator_id: chapter.get(2),
             chapter_id: chapter.get(3),
@@ -68,7 +67,7 @@ impl ChapterRepository {
     pub fn delete(&mut self) -> Result<(), Error> {
         match self.chapter.unwrap().id {
             Some(id) => {
-                self.client.execute("DELETE FROM chapters WHERE id=$1", &[id]);
+                self.client.execute("DELETE FROM chapters WHERE id=$1", &[&id]);
                 Ok(())
             }
             None => ()
