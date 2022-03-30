@@ -128,14 +128,7 @@ async fn callback_handler(
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let migrate = std::env::args().nth(1);
-    match migrate {
-        Some(_) => {
-            database::init::create_tables();
-            exit(0);
-        }
-        None => {}
-    }
+    database::init::create_tables();
     pretty_env_logger::init();
     log::info!("Starting bot...");
     dotenv::dotenv().ok();
