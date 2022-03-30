@@ -27,8 +27,8 @@ enum Command {
     Start,
     #[command(description = "Main menu")]
     Menu,
-    // #[command(description = "Add manga")]
-    // AddManga,
+    #[command(description = "Add manga")]
+    AddManga,
     #[command(description = "ping-pong")]
     Ping,
 }
@@ -83,6 +83,10 @@ async fn message_handler(
             Ok(Command::Start) => {
                 bot.send_message(m.chat.id, "Hi, send me /menu").await?;
                 dialogue.update(State::AddManga).await?;
+            }
+            Ok(Command::AddManga) => {
+                bot.send_message(m.chat.id, "Adding manga...").await?;
+                dialogue.update(State::AddMangaTitle).await?;
             }
             Ok(Command::Menu) => {
                 let keyboard = make_keyboard(None).await;
@@ -184,7 +188,7 @@ async fn add_manga_description_handler(
         Some(text) => {
             bot.send_message(m.chat.id, "Send me description").await?;
 
-            let mut manga = MangaRepository::init(DatabaseConnection::client())
+            let mut manga = MangaRepository::init(DatabaseConnection::client().await?)
                 .new(1, title, text.to_string(), "image".to_string()).await;
             manga.push();
             dialogue.update(State::Start).await?;
