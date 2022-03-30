@@ -15,7 +15,7 @@ pub struct ChapterRepository<'a> {
     chapter: Option<Chapter<'a>>,
 }
 
-impl Default for ChapterRepository {
+impl Default for ChapterRepository<'_> {
     fn default() -> Self {
         let mut client = DatabaseConnection::client();
         ChapterRepository { client, chapter: None }
