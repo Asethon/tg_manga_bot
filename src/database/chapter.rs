@@ -1,7 +1,7 @@
 #![allow(unused)]
 
 use crate::database;
-use postgres::{Client, Error};
+use tokio_postgres::{Client, Error};
 use database::database::DatabaseConnection;
 
 pub struct Chapter {

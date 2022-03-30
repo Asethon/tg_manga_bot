@@ -10,7 +10,7 @@ impl DatabaseConnection {
         let password = dotenv::var("POSTGRES_PASSWORD").unwrap();
         let host = dotenv::var("POSTGRES_HOST").unwrap();
         let params = format!("postgresql://{}:{}@{}", login, password, host);
-        let (client, connect) = tokio_postgres::connect(&*params, NoTls);
+        let (client, connection) = tokio_postgres::connect(&*params, NoTls);
         tokio::spawn(async move {
             if let Err(e) = connection.await {
                 eprintln!("connection error: {}", e);

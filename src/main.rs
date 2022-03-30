@@ -1,5 +1,4 @@
 use std::error::Error;
-use std::process::exit;
 use teloxide::{
     payloads::SendMessageSetters,
     prelude2::*,
