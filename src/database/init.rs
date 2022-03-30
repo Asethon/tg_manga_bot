@@ -16,9 +16,7 @@ fn create_table_manga() -> Result<(), Error>{
             description     VARCHAR NOT NULL,
             img             VARCHAR NOT NULL
         )
-    ");
-
-    Ok(())
+    ")
 }
 
 fn create_table_chapter() -> Result<(), Error>{
@@ -31,7 +29,5 @@ fn create_table_chapter() -> Result<(), Error>{
             chapter_id      VARCHAR NOT NULL,
             link            VARCHAR NOT NULL
         )
-    ");
-
-    Ok(())
+    ")
 }
