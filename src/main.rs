@@ -49,7 +49,7 @@ async fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
                 .collect();
         }
         None => {
-            let manga = vec![Manga { id: None, group_id: 0, title: "Title".to_string(), description: "Desc".to_string(), img: "image".to_string() }];
+            let manga = vec![Manga { id: Some(1), group_id: 0, title: "Title".to_string(), description: "Desc".to_string(), img: "image".to_string() }];
             row = manga
                 .into_iter()
                 .map(|manga| InlineKeyboardButton::callback(
