@@ -2,34 +2,34 @@ use crate::database;
 use postgres::{Client, Error};
 use database::database::DatabaseConnection;
 
-struct Manga {
+struct Manga<'a> {
     pub(crate) id: Option<i32>,
     pub(crate) group_id: i32,
-    pub(crate) title: &'static str,
-    pub(crate) description: &'static str,
-    pub(crate) img: &'static str,
+    pub(crate) title: &'a str,
+    pub(crate) description: &'a str,
+    pub(crate) img: &'a str,
 }
 
-pub struct MangaRepository {
+pub struct MangaRepository<'a> {
     client: Client,
-    manga: Option<Manga>,
+    manga: Option<Manga<'a>>,
 }
 
 impl Default for MangaRepository {
     fn default() -> Self {
-        let mut client = DatabaseConnection::client();
+        let client = DatabaseConnection::client();
         MangaRepository { client, manga: None }
     }
 }
 
 impl MangaRepository {
-    pub fn new(&mut self, group_id: i32, title: &'static str, description: &'static str, img: &'static str) -> &Self {
+    pub fn new<'a>(&mut self, group_id: i32, title: &'a str, description: &'a str, img: &'a str) -> &Self {
         self.manga = Option::from(Manga { id: None, group_id, title, description, img });
         self
     }
 
-    pub fn get(&mut self) -> Manga {
-        self.manga.unwrap()
+    pub fn get(&mut self) -> &Manga {
+        self.manga.as_ref().unwrap()
     }
 
     pub fn set(&mut self, manga: Manga) -> &Self {
@@ -38,14 +38,14 @@ impl MangaRepository {
     }
 
     pub fn push(&mut self) -> Result<(), Error> {
-        let manga = self.manga.unwrap();
+        let manga = self.manga.as_ref().unwrap();
         self.client.execute("INSERT INTO manga (), VALUES ($1, $2, $3, $4)",
                             &[&manga.group_id, &manga.title, &manga.description, &manga.img]);
         Ok(())
     }
 
     pub fn update(&mut self) -> Result<(), Error> {
-        let manga = self.manga.unwrap();
+        let manga = self.manga.as_ref().unwrap();
         self.client.execute("UPDATE manga SET group_id=$1, title=$2, description=$3, img=$4",
                             &[&manga.group_id, &manga.title, &manga.description, &manga.img]
         );
