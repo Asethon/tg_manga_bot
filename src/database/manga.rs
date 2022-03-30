@@ -2,17 +2,17 @@ use crate::database;
 use postgres::{Client, Error};
 use database::database::DatabaseConnection;
 
-struct Manga<'a> {
-    id: Option<i32>,
-    group_id: i32,
-    title: &'a str,
-    description: &'a str,
-    img: &'a str,
+struct Manga {
+    pub(crate) id: Option<i32>,
+    pub(crate) group_id: i32,
+    pub(crate) title: &'static str,
+    pub(crate) description: &'static str,
+    pub(crate) img: &'static str,
 }
 
 pub struct MangaRepository {
     client: Client,
-    manga: Option<Manga<'static>>,
+    manga: Option<Manga>,
 }
 
 impl Default for MangaRepository {
@@ -25,6 +25,15 @@ impl Default for MangaRepository {
 impl MangaRepository {
     pub fn new(&mut self, group_id: i32, title: &str, description: &str, img: &str) -> &Self {
         self.manga = Option::from(Manga { id: None, group_id, title, description, img });
+        self
+    }
+
+    pub fn get(&mut self) -> Manga {
+        self.manga.unwrap()
+    }
+
+    pub fn set(&mut self, manga: Manga) -> &Self {
+        self.manga = Option::from(manga);
         self
     }
 

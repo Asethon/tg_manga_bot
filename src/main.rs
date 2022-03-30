@@ -7,6 +7,10 @@ use teloxide::{
     },
     utils::command::BotCommand,
 };
+use crate::database::chapter::ChapterRepository;
+use crate::database::manga::MangaRepository;
+
+mod database;
 
 #[derive(BotCommand)]
 #[command(rename = "lowercase", description = "These commands are supported:")]
@@ -25,9 +29,8 @@ fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
     let row;
     match manga_id {
         Some(id) => {
-            row = get_chapters()
+            row = ChapterRepository::list_by_manga_id(&mut Default::default(), id)?
                 .into_iter()
-                .filter(|chapter| chapter.manga_id == id)
                 .map(|chapter| {
                     InlineKeyboardButton::callback(
                         "Глава ".to_owned() + chapter.chapter_id,
@@ -37,8 +40,7 @@ fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
                 .collect();
         }
         None => {
-            let manga_list = get_catalog();
-            row = manga_list
+            row = MangaRepository::list(&mut Default::default())?
                 .into_iter()
                 .map(|manga| InlineKeyboardButton::callback(
                     manga.title.to_owned(),
@@ -53,30 +55,6 @@ fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
     keyboard.push(row);
 
     InlineKeyboardMarkup::new(keyboard)
-}
-
-struct Manga<'a> {
-    id: i32,
-    title: &'a str,
-}
-
-impl<'a> Manga<'a> {
-    fn new(id: i32, title: &'a str) -> Manga<'a> {
-        Manga { id, title }
-    }
-}
-
-struct Chapter<'b> {
-    id: i32,
-    manga_id: i32,
-    chapter_id: &'b str,
-    link: &'b str,
-}
-
-impl<'b> Chapter<'b> {
-    fn new(id: i32, manga_id: i32, chapter_id: &'b str, link: &'b str) -> Chapter<'b> {
-        Chapter { id, manga_id, chapter_id, link }
-    }
 }
 
 /// Parse the text wrote on Telegram and check if that text is a valid command
@@ -111,24 +89,6 @@ async fn message_handler(
     Ok(())
 }
 
-fn get_catalog() -> Vec<Manga<'static>> {
-    let mut manga_list: Vec<Manga> = vec![];
-            let manga = Manga::new(1, "Пик боевых искусств");
-            manga_list.push(manga);
-    return manga_list;
-}
-
-fn get_chapters() -> Vec<Chapter<'static>> {
-    let mut chapters: Vec<Chapter> = vec![];
-            let chapter1 = Chapter::new(1, 1, "1",
-                                        "https://t.me/shrimp_from_the_island_bot/2");
-            let chapter2 = Chapter::new(2, 1, "2",
-                                        "https://t.me/shrimp_from_the_island_bot/6");
-            chapters.push(chapter1);
-            chapters.push(chapter2);
-    return chapters;
-}
-
 /// When it receives a callback from a button it edits the message with all
 /// those buttons writing a text with the selected Debian version.
 ///
@@ -149,13 +109,8 @@ async fn callback_handler(
                         bot.edit_message_text(chat.id, id, "Главы:").reply_markup(keyboard).await?;
                     }
                     "/chapter" => {
-                        let chapters = get_chapters();
-                        let chapter: Vec<Chapter> = chapters
-                            .into_iter()
-                            .filter(|chapter| chapter.id == link_id)
-                            .collect();
-                        let chapter = chapter.first().unwrap();
-                        let link = format!("[Глава {}]({})", chapter.id, chapter.link);
+                        let chapter= ChapterRepository::get_by_id(&mut Default::default(), link_id)?;
+                        let link = format!("[Глава {}]({})", chapter.id.unwrap(), chapter.link);
                         let keyboard = make_keyboard(Some(chapter.manga_id));
                         bot.edit_message_text(chat.id, id, link).reply_markup(keyboard).parse_mode(MarkdownV2).await?;
                     }
