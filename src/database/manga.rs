@@ -17,19 +17,12 @@ pub struct MangaRepository {
     manga: Option<Manga>,
 }
 
-impl Default for MangaRepository {
-    fn default() -> Self {
-        let client = DatabaseConnection::client().await?;
-        MangaRepository { client, manga: None }
-    }
-}
-
 impl MangaRepository  {
     pub fn init(client: Client) -> Self {
         MangaRepository { client, manga: None }
     }
 
-    pub fn new(&mut self, group_id: i32, title: String, description: String, img: String) -> &Self {
+    pub async fn new(&mut self, group_id: i32, title: String, description: String, img: String) -> &Self {
         self.manga = Option::from(Manga { id: None, group_id, title, description, img });
         self
     }

@@ -18,7 +18,7 @@ pub struct ChapterRepository {
 }
 
 impl ChapterRepository {
-    pub fn init(client: Client) -> Self {
+    pub async fn init(client: Client) -> Self {
         ChapterRepository { client, chapter: None }
     }
 
