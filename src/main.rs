@@ -16,6 +16,8 @@ use crate::database::manga::MangaRepository;
 
 mod database;
 
+type MyDialogue = Dialogue<State, InMemStorage<State>>;
+
 #[derive(BotCommand)]
 #[command(rename = "lowercase", description = "These commands are supported:")]
 enum Command {
@@ -68,8 +70,9 @@ async fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
 /// or not, then match the command. If the command is `/start` it writes a
 /// markup with the `InlineKeyboardMarkup`.
 async fn message_handler(
-    m: Message,
     bot: AutoSend<Bot>,
+    m: Message,
+    dialogue: MyDialogue,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     if let Some(text) = m.text() {
         match BotCommand::parse(text, "buttons") {
@@ -104,6 +107,7 @@ async fn message_handler(
 async fn callback_handler(
     q: CallbackQuery,
     bot: AutoSend<Bot>,
+    dialogue: MyDialogue,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     if let Some(link) = q.data {
         match q.message {
@@ -136,6 +140,8 @@ async fn callback_handler(
 pub enum State {
     #[handler(message_handler)]
     Start,
+    #[handler(callback_handler)]
+    Callback,
 }
 
 impl Default for State {
@@ -153,12 +159,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let bot = Bot::from_env().auto_send();
 
-    let handler = dptree::entry()
-        .branch(Update::filter_message()
+    let handler = Update::filter_message()
             .enter_dialogue::<Message, InMemStorage<State>, State>()
-            .dispatch_by::<State>()
-        )
-        .branch(Update::filter_callback_query().endpoint(callback_handler));
+            .dispatch_by::<State>();
 
     Dispatcher::builder(bot, handler)
         .dependencies(dptree::deps![InMemStorage::<State>::new()])
