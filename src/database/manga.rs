@@ -18,8 +18,8 @@ pub struct MangaRepository {
 }
 
 impl Default for MangaRepository {
-    fn default() -> Self {
-        let client = DatabaseConnection::client();
+    async fn default() -> Self {
+        let client = DatabaseConnection::client().await?;
         MangaRepository { client, manga: None }
     }
 }
