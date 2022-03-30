@@ -33,7 +33,7 @@ fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
                 .into_iter()
                 .map(|chapter| {
                     InlineKeyboardButton::callback(
-                        "Глава ".to_owned() + chapter.chapter_id,
+                        "Глава ".to_owned() + &*chapter.chapter_id,
                         "/chapter?".to_owned() + &chapter.id.unwrap().to_string(),
                     )
                 })
