@@ -1,4 +1,3 @@
-use log::log;
 use postgres::{Client, NoTls};
 
 pub struct DatabaseConnection {
