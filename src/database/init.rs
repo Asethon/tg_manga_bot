@@ -2,8 +2,8 @@ use postgres::Error;
 use crate::database::database::DatabaseConnection;
 
 pub fn create_tables() {
-    create_table_manga();
-    create_table_chapter();
+    create_table_manga()?;
+    create_table_chapter()?;
 }
 
 fn create_table_manga() -> Result<(), Error>{
