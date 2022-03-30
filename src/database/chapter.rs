@@ -2,17 +2,17 @@ use crate::database;
 use postgres::{Client, Error};
 use database::database::DatabaseConnection;
 
-struct Chapter {
+struct Chapter<'a> {
     pub(crate) id: Option<i32>,
     pub(crate) manga_id: i32,
     translator_id: i32,
-    pub(crate) chapter_id: &'static str,
-    pub(crate) link: &'static str,
+    pub(crate) chapter_id: &'a str,
+    pub(crate) link: &'a str,
 }
 
-pub struct ChapterRepository {
+pub struct ChapterRepository<'a> {
     client: Client,
-    chapter: Option<Chapter>,
+    chapter: Option<Chapter<'a>>,
 }
 
 impl Default for ChapterRepository {
@@ -22,17 +22,17 @@ impl Default for ChapterRepository {
     }
 }
 
-impl ChapterRepository {
-    pub fn new(&mut self, manga_id: i32, translator_id: i32, chapter_id: &'static str, link: &'static str) -> &Self {
+impl<'a> ChapterRepository<'a> {
+    pub fn new(&mut self, manga_id: i32, translator_id: i32, chapter_id: &'a str, link: &'a str) -> &Self {
         self.chapter = Option::from(Chapter { id: None, manga_id, translator_id, chapter_id, link });
         self
     }
 
-    pub fn get(&mut self) -> Chapter {
+    pub fn get(&mut self) -> Chapter<'a> {
         self.chapter.unwrap()
     }
 
-    pub fn set(&mut self, chapter: Chapter) -> &Self {
+    pub fn set(&mut self, chapter: Chapter<'a>) -> &Self {
         self.chapter = Option::from(chapter);
         self
     }
@@ -52,7 +52,7 @@ impl ChapterRepository {
         Ok(())
     }
 
-    pub fn get_by_id(&mut self, id: i32) -> Result<Chapter, Error> {
+    pub fn get_by_id(&mut self, id: i32) -> Result<Chapter<'a>, Error> {
         let chapter = self.client.query_one("SELECT * FROM chapters WHERE id=$1", &[&id])?;
         let id: i32 = chapter.get(0);
         Ok(Chapter {
@@ -74,7 +74,7 @@ impl ChapterRepository {
         }
     }
 
-    pub fn list(&mut self) -> Result<Vec<Chapter>, Error> {
+    pub fn list(&mut self) -> Result<Vec<Chapter<'a>>, Error> {
         let mut chapter_list = vec![];
         for row in self.client.query("select * from chapters", &[])? {
             let id: i32 = row.get(0);
@@ -89,7 +89,7 @@ impl ChapterRepository {
         Ok(chapter_list)
     }
 
-    pub fn list_by_manga_id(&mut self, id: i32) -> Result<Vec<Chapter>, Error> {
+    pub fn list_by_manga_id(&mut self, id: i32) -> Result<Vec<Chapter<'a>>, Error> {
         let mut chapter_list = vec![];
         for row in self.client.query("select * from chapters WHERE manga_id=$1", &[&id])? {
             let id: i32 = row.get(0);
