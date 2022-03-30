@@ -1,8 +1,6 @@
 use tokio_postgres::{Client, NoTls, Error};
 
-pub struct DatabaseConnection {
-    client: Client,
-}
+pub struct DatabaseConnection {}
 
 impl DatabaseConnection {
     pub async fn client() -> Result<Client, Error> {

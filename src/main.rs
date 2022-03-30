@@ -23,6 +23,8 @@ enum Command {
     Start,
     #[command(description = "Main menu")]
     Menu,
+    #[command(description = "Add manga")]
+    AddManga,
     #[command(description = "ping-pong")]
     Ping,
 }
@@ -130,7 +132,6 @@ async fn callback_handler(
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    database::init::create_tables().await;
     pretty_env_logger::init();
     log::info!("Starting bot...");
     dotenv::dotenv().ok();
