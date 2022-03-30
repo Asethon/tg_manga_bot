@@ -135,13 +135,16 @@ async fn callback_handler(
 
     Ok(())
 }
+
 #[derive(DialogueState, Clone)]
-#[handler_out(anyhow::Result<()>)]
+#[handler_out(anyhow::Result < () >)]
 pub enum State {
-    #[handler(message_handler)]
-    Start,
     #[handler(add_manga_handler)]
-    AddManga,
+    Start,
+    #[handler(add_manga_title_handler)]
+    AddMangaTitle,
+    #[handler(add_manga_description_handler)]
+    Description { title: String },
 }
 
 async fn add_manga_handler(
@@ -149,8 +152,45 @@ async fn add_manga_handler(
     m: Message,
     dialogue: MyDialogue,
 ) -> anyhow::Result<()> {
-    bot.send_message(m.chat.id, "Hi, i am handler").await?;
-    dialogue.update(State::Start).await?;
+    bot.send_message(m.chat.id, "Adding manga. Send me title").await?;
+    dialogue.update(State::AddMangaTitle).await?;
+    Ok(())
+}
+
+async fn add_manga_title_handler(
+    bot: AutoSend<Bot>,
+    m: Message,
+    dialogue: MyDialogue,
+) -> anyhow::Result<()> {
+    match m.text() {
+        Some(text) => {
+            bot.send_message(m.chat.id, "Send me description").await?;
+            dialogue.update(State::Description { title: text.into() }).await?;
+        }
+        None => {
+            bot.send_message(m.chat.id, "Send me title.").await?;
+        }
+    }
+    Ok(())
+}
+
+async fn add_manga_description_handler(
+    bot: AutoSend<Bot>,
+    m: Message,
+    dialogue: MyDialogue,
+    (title, ): (String, ),
+) -> anyhow::Result<()> {
+    match m.text() {
+        Some(text) => {
+            bot.send_message(m.chat.id, "Send me description").await?;
+
+            let mut manga = MangaRepository::init(DatabaseConnection::client())
+                .new(1, title, text.to_string(), "image".to_string()).await;
+            manga.push();
+            dialogue.update(State::Start).await?;
+        }
+        None => ()
+    }
     Ok(())
 }
 
