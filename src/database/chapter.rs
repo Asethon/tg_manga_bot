@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use crate::database;
 use postgres::{Client, Error};
 use database::database::DatabaseConnection;

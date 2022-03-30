@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::process::exit;
 use teloxide::{
     payloads::SendMessageSetters,
     prelude2::*,
@@ -7,6 +8,8 @@ use teloxide::{
     },
     utils::command::BotCommand,
 };
+use clap::Parser;
+
 use crate::database::chapter::ChapterRepository;
 use crate::database::manga::MangaRepository;
 
@@ -124,8 +127,21 @@ async fn callback_handler(
     Ok(())
 }
 
+#[derive(Parser)]
+struct Cli {
+    migrate: String
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+    let migrate = std::env::args().nth(1);
+    match migrate {
+        None => {}
+        Some(_) => {
+            database::init::create_tables();
+            exit(0);
+        }
+    }
     pretty_env_logger::init();
     log::info!("Starting bot...");
     dotenv::dotenv().ok();
