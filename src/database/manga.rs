@@ -15,7 +15,7 @@ pub struct MangaRepository<'a> {
     manga: Option<Manga<'a>>,
 }
 
-impl Default for MangaRepository<'_> {
+impl Default for MangaRepository {
     fn default() -> Self {
         let client = DatabaseConnection::client();
         MangaRepository { client, manga: None }
@@ -23,7 +23,7 @@ impl Default for MangaRepository<'_> {
 }
 
 impl MangaRepository <'_> {
-    pub fn new(&mut self, group_id: i32, title: &'_ str, description: &'_ str, img: &'_ str) -> &Self {
+    pub fn new<'a>(&mut self, group_id: i32, title: &'a str, description: &'a str, img: &'a str) -> &Self {
         self.manga = Option::from(Manga { id: None, group_id, title, description, img });
         self
     }
