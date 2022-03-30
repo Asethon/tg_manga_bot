@@ -150,7 +150,7 @@ pub enum State {
     Description { title: String },
 }
 
-#[derive(DialogueState), Clone]
+#[derive(DialogueState, Clone)]
 #[handler_out(anyhow::Result < () >)]
 pub enum StateChapters {
     #[handler(message_handler)]
