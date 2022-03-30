@@ -2,8 +2,8 @@ use tokio_postgres::Error;
 use crate::database::database::DatabaseConnection;
 
 pub async fn create_tables() {
-    create_table_manga()?;
-    create_table_chapter()?;
+    create_table_manga().await;
+    create_table_chapter().await;
 }
 
 async fn create_table_manga() -> Result<(), Error>{
@@ -16,7 +16,7 @@ async fn create_table_manga() -> Result<(), Error>{
             description     VARCHAR NOT NULL,
             img             VARCHAR NOT NULL
         )
-    ")
+    ").await
 }
 
 async fn create_table_chapter() -> Result<(), Error>{
@@ -29,5 +29,5 @@ async fn create_table_chapter() -> Result<(), Error>{
             chapter_id      VARCHAR NOT NULL,
             link            VARCHAR NOT NULL
         )
-    ")
+    ").await
 }
