@@ -18,7 +18,7 @@ pub struct MangaRepository {
 }
 
 impl MangaRepository  {
-    pub fn init(client: Client) -> Self {
+    pub fn init(client: Client) -> MangaRepository {
         MangaRepository { client, manga: None }
     }
 

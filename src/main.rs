@@ -27,7 +27,7 @@ enum Command {
     Ping,
 }
 
-fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
+async fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
     let row;
     let client = DatabaseConnection::client().await?;
     match manga_id {
