@@ -12,7 +12,7 @@ use teloxide::dispatching2::dialogue::InMemStorage;
 
 use crate::database::chapter::ChapterRepository;
 use crate::database::database::DatabaseConnection;
-use crate::database::manga::MangaRepository;
+use crate::database::manga::{Manga, MangaRepository};
 
 mod database;
 
@@ -49,7 +49,8 @@ async fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
                 .collect();
         }
         None => {
-            row = MangaRepository::init(client).list().await.unwrap()
+            let manga = vec![Manga { id: None, group_id: 0, title: "Title".to_string(), description: "Desc".to_string(), img: "image".to_string() }];
+            row = manga
                 .into_iter()
                 .map(|manga| InlineKeyboardButton::callback(
                     manga.title.to_owned(),
