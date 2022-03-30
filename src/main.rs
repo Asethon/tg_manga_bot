@@ -82,7 +82,6 @@ async fn message_handler(
             }
             Ok(Command::Start) => {
                 bot.send_message(m.chat.id, "Hi, send me /menu").await?;
-                dialogue.update(State::AddManga).await?;
             }
             Ok(Command::AddManga) => {
                 bot.send_message(m.chat.id, "Adding manga...").await?;
@@ -188,9 +187,10 @@ async fn add_manga_description_handler(
         Some(text) => {
             bot.send_message(m.chat.id, "Send me description").await?;
             let client = DatabaseConnection::client().await?;
-            let manga = MangaRepository::init(client)
-                .new(1, title, text.to_string(), "image".to_string()).await.clone();
-            manga.push();
+            MangaRepository::init(client)
+                .new(1, title, text.to_string(), "image".to_string())
+                .await
+                .push()?;
             dialogue.update(State::Start).await?;
         }
         None => ()
