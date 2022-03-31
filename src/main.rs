@@ -101,7 +101,8 @@ async fn message_handler(
                 bot.send_message(m.chat.id, "pong").await?;
             }
             Err(_) => {
-                bot.send_message(m.chat.id, "Что-то пошло не так...").await?;
+                let text = format!("Что-то пошло не так... {}", _);
+                bot.send_message(m.chat.id, text).await?;
             }
         };
     }
@@ -222,7 +223,8 @@ async fn chapter_id_handler(
     if let Some(link) = q.data {
         match q.message {
             Some(Message { id, chat, .. }) => {
-                bot.send_message(chat.id, link).await?;
+                bot.send_message(chat.id, &link).await?;
+                dialogue.update(StateChapters::InsertChapterLink { chapter_id: link });
             }
             None => ()
         }
