@@ -139,7 +139,7 @@ async fn callback_handler(
                         bot.edit_message_text(chat.id, id, link).reply_markup(keyboard).parse_mode(MarkdownV2).await?;
                     }
                     "/chapter_add" => {
-                        bot.send_message(chat.id,"Add chapter...").await?;
+                        bot.send_message(chat.id, "Add chapter...").await?;
                         dialogue.update(StateChapters::InsertChapterId).await?;
                     }
                     _ => {}
@@ -256,6 +256,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .branch(Update::filter_message()
             .enter_dialogue::<Message, InMemStorage<State>, State>()
             .dispatch_by::<State>()
+            .enter_dialogue::<CallbackQuery, InMemStorage<StateChapters>, StateChapters>()
+            .dispatch_by::<StateChapters>()
         )
         .branch(
             Update::filter_callback_query()
