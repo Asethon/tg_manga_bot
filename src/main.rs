@@ -138,7 +138,7 @@ async fn callback_handler(
                     }
                     "/chapter_add" => {
                         bot.send_message(chat.id,"Add chapter...").await?;
-                        dialogue.update(StateChapters::InsertChapterId).await?;
+                        //dialogue.update(StateChapters::InsertChapterId).await?;
                     }
                     _ => {}
                 }
