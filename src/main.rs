@@ -18,11 +18,8 @@ use crate::database::{
 
 mod database;
 
-struct StateSt (InMemStorage<State>);
-struct StateChapterSt(StateChapters);
-
-type MangaDialogue = Dialogue<State, StateSt>;
-type ChapterDialogue = Dialogue<StateChapters, StateChapterSt>;
+type MangaDialogue = Dialogue<State, InMemStorage<State>>;
+type ChapterDialogue = Dialogue<StateChapters, InMemStorage<StateChapters>>;
 
 #[derive(BotCommand)]
 #[command(rename = "lowercase", description = "These commands are supported:")]
@@ -220,7 +217,7 @@ pub enum StateChapters {
 async fn chapter_id_handler(
     bot: AutoSend<Bot>,
     q: CallbackQuery,
-    dialogue: ChapterDialogue,
+    //dialogue: ChapterDialogue,
 ) -> anyhow::Result<()> {
     if let Some(link) = q.data {
         match q.message {
@@ -254,15 +251,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let handler = dptree::entry()
         .branch(Update::filter_message()
-            .enter_dialogue::<Message, StateSt, State>()
-            .enter_dialogue::<Message, StateChapterSt, StateChapters>()
+            .enter_dialogue::<Message, InMemStorage<State>, State>()
             .dispatch_by::<State>()
-            .dispatch_by::<StateChapters>()
         )
         .branch(Update::filter_callback_query().endpoint(callback_handler));
 
     Dispatcher::builder(bot, handler)
-        .dependencies(dptree::deps![StateSt::new(), StateChapterSt::new()])
+        .dependencies(dptree::deps![InMemStorage::<State>::new()])
         .build().setup_ctrlc_handler().dispatch().await;
 
     log::info!("Closing bot... Goodbye!");
