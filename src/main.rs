@@ -206,7 +206,7 @@ impl Default for State {
 #[derive(DialogueState, Clone)]
 #[handler_out(anyhow::Result < () >)]
 pub enum StateChapters {
-    #[handler(message_handler)]
+    #[handler(callback_handler)]
     Start,
     #[handler(chapter_id_handler)]
     InsertChapterId,
@@ -257,10 +257,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .branch(
             Update::filter_callback_query()
                 .enter_dialogue::<CallbackQuery, InMemStorage<StateChapters>, StateChapters>()
+                .dispatch_by::<StateChapters>()
         );
 
     Dispatcher::builder(bot, handler)
-        .dependencies(dptree::deps![InMemStorage::<State>::new()])
+        .dependencies(dptree::deps![InMemStorage::<State>::new(), InMemStorage::<StateChapters>::new()])
         .build().setup_ctrlc_handler().dispatch().await;
 
     log::info!("Closing bot... Goodbye!");
