@@ -19,7 +19,7 @@ use crate::database::{
 mod database;
 
 type MangaDialogue = Dialogue<State, InMemStorage<State>>;
-type ChapterDialogue = Dialogue<StateChapters, InMemStorage<StateChapters>>;
+//type ChapterDialogue = Dialogue<StateChapters, InMemStorage<StateChapters>>;
 
 #[derive(BotCommand)]
 #[command(rename = "lowercase", description = "These commands are supported:")]
@@ -117,7 +117,7 @@ async fn message_handler(
 async fn callback_handler(
     q: CallbackQuery,
     bot: AutoSend<Bot>,
-    dialogue: ChapterDialogue,
+    //dialogue: ChapterDialogue,
 ) -> anyhow::Result<()> {
     if let Some(link) = q.data {
         match q.message {
