@@ -101,7 +101,7 @@ async fn message_handler(
                 bot.send_message(m.chat.id, "pong").await?;
             }
             Err(_) => {
-                let text = format!("Что-то пошло не так... {}", _);
+                let text = format!("Что-то пошло не так... {}", text);
                 bot.send_message(m.chat.id, text).await?;
             }
         };
