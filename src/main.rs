@@ -19,7 +19,7 @@ use crate::database::{
 mod database;
 
 type MangaDialogue = Dialogue<State, InMemStorage<State>>;
-//type ChapterDialogue = Dialogue<StateChapters, InMemStorage<StateChapters>>;
+type ChapterDialogue = Dialogue<StateChapters, InMemStorage<StateChapters>>;
 
 #[derive(BotCommand)]
 #[command(rename = "lowercase", description = "These commands are supported:")]
@@ -117,7 +117,7 @@ async fn message_handler(
 async fn callback_handler(
     q: CallbackQuery,
     bot: AutoSend<Bot>,
-    //dialogue: ChapterDialogue,
+    dialogue: ChapterDialogue,
 ) -> anyhow::Result<()> {
     if let Some(link) = q.data {
         match q.message {
@@ -138,7 +138,7 @@ async fn callback_handler(
                     }
                     "/chapter_add" => {
                         bot.send_message(chat.id,"Add chapter...").await?;
-                        //dialogue.update(StateChapters::InsertChapterId).await?;
+                        dialogue.update(StateChapters::InsertChapterId).await?;
                     }
                     _ => {}
                 }
@@ -217,7 +217,7 @@ pub enum StateChapters {
 async fn chapter_id_handler(
     bot: AutoSend<Bot>,
     q: CallbackQuery,
-    //dialogue: ChapterDialogue,
+    dialogue: ChapterDialogue,
 ) -> anyhow::Result<()> {
     if let Some(link) = q.data {
         match q.message {
@@ -254,7 +254,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
             .enter_dialogue::<Message, InMemStorage<State>, State>()
             .dispatch_by::<State>()
         )
-        .branch(Update::filter_callback_query().endpoint(callback_handler));
+        .branch(
+            Update::filter_callback_query()
+                .enter_dialogue::<CallbackQuery, InMemStorage<StateChapters>, StateChapters>()
+        );
 
     Dispatcher::builder(bot, handler)
         .dependencies(dptree::deps![InMemStorage::<State>::new()])
