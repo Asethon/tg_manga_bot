@@ -79,6 +79,7 @@ async fn message_handler(
     bot: AutoSend<Bot>,
     m: Message,
     dialogue: MangaDialogue,
+    dialogue_chapter: ChapterDialogue,
 ) -> anyhow::Result<()> {
     if let Some(text) = m.text() {
         match BotCommand::parse(text, "buttons") {
