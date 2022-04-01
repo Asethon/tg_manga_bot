@@ -150,8 +150,6 @@ async fn callback_handler(
     Ok(())
 }
 
-#[derive(DialogueState, Clone)]
-#[handler_out(anyhow::Result < () >)]
 pub enum State {
     #[handler(message_handler)]
     Start,
@@ -203,8 +201,6 @@ impl Default for State {
 }
 
 
-#[derive(DialogueState, Clone)]
-#[handler_out(anyhow::Result < () >)]
 pub enum StateChapters {
     #[handler(callback_handler)]
     Start,
@@ -242,6 +238,7 @@ impl Default for StateChapters {
 }
 
 #[derive(DialogueState, Clone)]
+#[handler_out(anyhow::Result < () >)]
 enum StateGlobal {
     Start { state: State },
     AddChapter { state: StateChapters}
