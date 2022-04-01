@@ -271,9 +271,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             .dispatch_by::<StateGlobal>()
         )
         .branch(
-            Update::filter_callback_query()
-                .enter_dialogue::<CallbackQuery, InMemStorage<StateGlobal>, StateGlobal>()
-                .dispatch_by::<StateGlobal>()
+            Update::filter_callback_query().endpoint(callback_handler)
         );
 
     Dispatcher::builder(bot, handler)
