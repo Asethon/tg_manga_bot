@@ -181,7 +181,7 @@ async fn add_manga_title_handler(
 async fn add_manga_description_handler(
     bot: AutoSend<Bot>,
     m: Message,
-    dialogue: MangaDialogue,
+    dialogue: StateDialogue,
     (title, ): (String, ),
 ) -> anyhow::Result<()> {
     match m.text() {
@@ -244,7 +244,9 @@ impl Default for StateChapters {
 #[derive(DialogueState, Clone)]
 #[handler_out(anyhow::Result < () >)]
 enum StateGlobal {
+    #[handler(message_handler)]
     Start { state: State },
+    #[handler(callback_handler)]
     AddChapter { state: StateChapters}
 }
 
