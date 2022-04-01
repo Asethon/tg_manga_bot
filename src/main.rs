@@ -15,6 +15,7 @@ use crate::database::{
     database::DatabaseConnection,
     manga::MangaRepository,
 };
+use crate::State::Start;
 
 mod database;
 
@@ -248,6 +249,12 @@ enum StateGlobal {
     Start { state: State },
     #[handler(callback_handler)]
     AddChapter { state: StateChapters}
+}
+
+impl Default for StateGlobal {
+    fn default() -> Self {
+        Self::Start { state: State::Start }
+    }
 }
 
 #[tokio::main]
