@@ -241,6 +241,7 @@ impl Default for StateChapters {
     }
 }
 
+#[derive(DialogueState, Clone)]
 enum StateGlobal {
     Start { state: State },
     AddChapter { state: StateChapters}
