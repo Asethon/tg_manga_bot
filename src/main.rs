@@ -247,7 +247,7 @@ impl Default for StateChapters {
 enum StateGlobal {
     #[handler(message_handler)]
     Start { state: State },
-    #[handler(callback_handler)]
+    #[handler(message_handler)]
     AddChapter { state: StateChapters}
 }
 
