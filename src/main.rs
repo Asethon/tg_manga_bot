@@ -15,7 +15,6 @@ use crate::database::{
     database::DatabaseConnection,
     manga::MangaRepository,
 };
-use crate::State::Start;
 
 mod database;
 
@@ -224,7 +223,7 @@ async fn chapter_id_handler(
         match q.message {
             Some(Message { id, chat, .. }) => {
                 bot.send_message(chat.id, &link).await?;
-                dialogue.update(StateGlobal::AddChapter {state: StateChapters::InsertChapterLink { chapter_id: link }});
+                dialogue.update(StateGlobal::AddChapter {state: StateChapters::InsertChapterLink { chapter_id: link }}).await?;
             }
             None => ()
         }
