@@ -181,7 +181,7 @@ async fn add_manga_title_handler(
     Ok(())
 }
 
-/*async fn add_manga_description_handler(
+async fn add_manga_description_handler(
     bot: AutoSend<Bot>,
     m: Message,
     dialogue: MangaDialogue,
@@ -197,7 +197,7 @@ async fn add_manga_title_handler(
         None => ()
     }
     Ok(())
-}*/
+}
 
 impl Default for State {
     fn default() -> Self {
