@@ -29,6 +29,12 @@ enum Command {
     Start,
     #[command(description = "Main menu")]
     Menu,
+
+    #[command(description = "Main menu")]
+    MangaAdd,
+    #[command(description = "Main menu")]
+    ChapterAdd,
+
     #[command(description = "ping-pong")]
     Ping,
 }
@@ -79,6 +85,7 @@ async fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
 async fn message_handler(
     bot: AutoSend<Bot>,
     m: Message,
+    manga_dialogue: MangaDialogue,
 ) -> anyhow::Result<()> {
     if let Some(text) = m.text() {
         match BotCommand::parse(text, "buttons") {
@@ -95,6 +102,14 @@ async fn message_handler(
             }
             Ok(Command::Ping) => {
                 bot.send_message(m.chat.id, "pong").await?;
+            }
+            Ok(Command::MangaAdd) => {
+                bot.send_message(m.chat.id, "Add manga...").await?;
+                manga_dialogue.update(State::AddMangaTitle).await?;
+            }
+            Ok(Command::ChapterAdd) => {
+                bot.send_message(m.chat.id, "Add chapter...").await?;
+                manga_dialogue.update(State::InsertChapterId).await?;
             }
             Err(_) => {
                 let text = format!("Что-то пошло не так... {}", text);
@@ -115,7 +130,6 @@ async fn message_handler(
 async fn callback_handler(
     q: CallbackQuery,
     bot: AutoSend<Bot>,
-    manga_dialogue: MangaDialogue,
 ) -> anyhow::Result<()> {
     if let Some(link) = q.data {
         match q.message {
@@ -133,14 +147,6 @@ async fn callback_handler(
                         let link = format!("[Глава {}]({})", chapter.id.unwrap(), chapter.link);
                         let keyboard = make_keyboard(Some(chapter.manga_id)).await;
                         bot.edit_message_text(chat.id, id, link).reply_markup(keyboard).parse_mode(MarkdownV2).await?;
-                    }
-                    "/manga_add" => {
-                        bot.send_message(chat.id, "Add chapter...").await?;
-                        manga_dialogue.update(State::AddMangaTitle).await?;
-                    }
-                    "/chapter_add" => {
-                        bot.send_message(chat.id, "Add chapter...").await?;
-                        manga_dialogue.update(State::InsertChapterId).await?;
                     }
                     _ => {}
                 }
@@ -194,15 +200,15 @@ async fn add_manga_description_handler(
     dialogue: MangaDialogue,
     (title, ): (String, ),
 ) -> anyhow::Result<()> {
-        match m.text() {
-            Some(text) => {
-                bot.send_message(m.chat.id, "Manga added").await?;
-                let client = DatabaseConnection::client().await?;
-                MangaRepository::init(client).new(1, title, text.to_string(), "image".to_string()).push().await?;
-                dialogue.update(State::Start).await?;
-            }
-            None => ()
+    match m.text() {
+        Some(text) => {
+            bot.send_message(m.chat.id, "Manga added").await?;
+            let client = DatabaseConnection::client().await?;
+            MangaRepository::init(client).new(1, title, text.to_string(), "image".to_string()).push().await?;
+            dialogue.update(State::Start).await?;
         }
+        None => ()
+    }
     Ok(())
 }
 
@@ -217,13 +223,13 @@ async fn chapter_id_handler(
     m: Message,
     dialogue: MangaDialogue,
 ) -> anyhow::Result<()> {
-        match m.text() {
-            Some(link) => {
-                bot.send_message(m.chat.id, link).await?;
-                dialogue.update(State::InsertChapterLink { chapter_id: String::from(link) }).await?;
-            }
-            None => ()
+    match m.text() {
+        Some(link) => {
+            bot.send_message(m.chat.id, link).await?;
+            dialogue.update(State::InsertChapterLink { chapter_id: String::from(link) }).await?;
         }
+        None => ()
+    }
     Ok(())
 }
 
