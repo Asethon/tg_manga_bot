@@ -137,7 +137,7 @@ async fn callback_handler(
                     }
                     "/manga_add" => {
                         bot.send_message(chat.id, "Add chapter...").await?;
-                        //manga_dialogue.update(State::AddMangaTitle).await?;
+                        manga_dialogue.update(State::AddMangaTitle).await?;
                     }
                     "/chapter_add" => {
                         bot.send_message(chat.id, "Add chapter...").await?;
@@ -173,7 +173,7 @@ async fn add_manga_title_handler(
         match q.message {
             Some(Message { id, chat, .. }) => {
                 bot.send_message(chat.id, "Send me description").await?;
-                //dialogue.update(State::Description { title: text.into() }).await?;
+                dialogue.update(State::Description { title: text.into() }).await?;
             }
             None => ()
         }
@@ -258,7 +258,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         )
         .branch(
             Update::filter_callback_query()
-                .enter_dialogue::<Message, InMemStorage<State>, State>()
+                .enter_dialogue::<CallbackQuery, InMemStorage<State>, State>()
                 .dispatch_by::<State>()
                 .enter_dialogue::<CallbackQuery, InMemStorage<StateChapters>, StateChapters>()
                 .dispatch_by::<StateChapters>()
