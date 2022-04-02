@@ -18,7 +18,8 @@ use crate::database::{
 
 mod database;
 
-type StateDialogue = Dialogue<StateGlobal, InMemStorage<StateGlobal>>;
+type MangaDialogue = Dialogue<State, InMemStorage<State>>;
+type ChapterDialogue = Dialogue<StateChapters, InMemStorage<StateChapters>>;
 
 #[derive(BotCommand)]
 #[command(rename = "lowercase", description = "These commands are supported:")]
@@ -29,8 +30,6 @@ enum Command {
     Start,
     #[command(description = "Main menu")]
     Menu,
-    #[command(description = "Add manga")]
-    AddManga,
     #[command(description = "ping-pong")]
     Ping,
 }
@@ -63,6 +62,10 @@ async fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
                     "/manga?".to_owned() + &manga.id.unwrap().to_string())
                 )
                 .collect();
+            keyboard.push(vec![InlineKeyboardButton::callback(
+                "Добавить мангу".to_owned(),
+                "/manga_add".to_owned(),
+            )]);
         }
     }
 
@@ -77,7 +80,6 @@ async fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
 async fn message_handler(
     bot: AutoSend<Bot>,
     m: Message,
-    dialogue: StateDialogue,
 ) -> anyhow::Result<()> {
     if let Some(text) = m.text() {
         match BotCommand::parse(text, "buttons") {
@@ -87,10 +89,6 @@ async fn message_handler(
             }
             Ok(Command::Start) => {
                 bot.send_message(m.chat.id, "Hi, send me /menu").await?;
-            }
-            Ok(Command::AddManga) => {
-                bot.send_message(m.chat.id, "Adding manga. Send me title").await?;
-                dialogue.update(StateGlobal::Start { state: State::AddMangaTitle }).await?;
             }
             Ok(Command::Menu) => {
                 let keyboard = make_keyboard(None).await;
@@ -117,7 +115,8 @@ async fn message_handler(
 async fn callback_handler(
     q: CallbackQuery,
     bot: AutoSend<Bot>,
-    dialogue: StateDialogue,
+    manga_dialogue: MangaDialogue,
+    chapter_dialogue: ChapterDialogue,
 ) -> anyhow::Result<()> {
     if let Some(link) = q.data {
         match q.message {
@@ -136,9 +135,13 @@ async fn callback_handler(
                         let keyboard = make_keyboard(Some(chapter.manga_id)).await;
                         bot.edit_message_text(chat.id, id, link).reply_markup(keyboard).parse_mode(MarkdownV2).await?;
                     }
+                    "/manga_add" => {
+                        bot.send_message(chat.id, "Add chapter...").await?;
+                        manga_dialogue.update(State::AddMangaTitle).await?;
+                    }
                     "/chapter_add" => {
                         bot.send_message(chat.id, "Add chapter...").await?;
-                        dialogue.update(StateGlobal::AddChapter { state: StateChapters::InsertChapterId} ).await?;
+                        chapter_dialogue.update(StateChapters::InsertChapterId).await?;
                     }
                     _ => {}
                 }
@@ -164,12 +167,12 @@ pub enum State {
 async fn add_manga_title_handler(
     bot: AutoSend<Bot>,
     m: Message,
-    dialogue: StateDialogue,
+    dialogue: MangaDialogue,
 ) -> anyhow::Result<()> {
     match m.text() {
         Some(text) => {
             bot.send_message(m.chat.id, "Send me description").await?;
-            dialogue.update(StateGlobal::Start{state: State::Description { title: text.into() }}).await?;
+            dialogue.update(State::Description { title: text.into() }).await?;
         }
         None => {
             bot.send_message(m.chat.id, "Send me title.").await?;
@@ -181,7 +184,7 @@ async fn add_manga_title_handler(
 async fn add_manga_description_handler(
     bot: AutoSend<Bot>,
     m: Message,
-    dialogue: StateDialogue,
+    dialogue: MangaDialogue,
     (title, ): (String, ),
 ) -> anyhow::Result<()> {
     match m.text() {
@@ -189,7 +192,7 @@ async fn add_manga_description_handler(
             bot.send_message(m.chat.id, "Manga added").await?;
             let client = DatabaseConnection::client().await?;
             MangaRepository::init(client).new(1, title, text.to_string(), "image".to_string()).push().await?;
-            dialogue.update(StateGlobal::Start{ state: State::Start} ).await?;
+            dialogue.update(State::Start).await?;
         }
         None => ()
     }
@@ -217,13 +220,13 @@ pub enum StateChapters {
 async fn chapter_id_handler(
     bot: AutoSend<Bot>,
     q: CallbackQuery,
-    dialogue: StateDialogue,
+    dialogue: ChapterDialogue,
 ) -> anyhow::Result<()> {
     if let Some(link) = q.data {
         match q.message {
             Some(Message { id, chat, .. }) => {
                 bot.send_message(chat.id, &link).await?;
-                dialogue.update(StateGlobal::AddChapter {state: StateChapters::InsertChapterLink { chapter_id: link }}).await?;
+                dialogue.update(StateChapters::InsertChapterLink { chapter_id: link });
             }
             None => ()
         }
@@ -241,21 +244,6 @@ impl Default for StateChapters {
     }
 }
 
-#[derive(DialogueState, Clone)]
-#[handler_out(anyhow::Result < () >)]
-enum StateGlobal {
-    #[handler(message_handler)]
-    Start { state: State },
-    #[handler(message_handler)]
-    AddChapter { state: StateChapters}
-}
-
-impl Default for StateGlobal {
-    fn default() -> Self {
-        Self::Start { state: State::Start }
-    }
-}
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     database::init::create_tables().await;
@@ -266,16 +254,18 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let bot = Bot::from_env().auto_send();
 
     let handler = dptree::entry()
-        .branch(Update::filter_message()
-            .enter_dialogue::<Message, InMemStorage<StateGlobal>, StateGlobal>()
-            .dispatch_by::<StateGlobal>()
+        .branch(Update::filter_message().endpoint(message_handler)
         )
         .branch(
-            Update::filter_callback_query().endpoint(callback_handler)
+            Update::filter_callback_query()
+                .enter_dialogue::<Message, InMemStorage<State>, State>()
+                .dispatch_by::<State>()
+                .enter_dialogue::<CallbackQuery, InMemStorage<StateChapters>, StateChapters>()
+                .dispatch_by::<StateChapters>()
         );
 
     Dispatcher::builder(bot, handler)
-        .dependencies(dptree::deps![InMemStorage::<StateGlobal>::new()])
+        .dependencies(dptree::deps![InMemStorage::<State>::new(), InMemStorage::<StateChapters>::new()])
         .build().setup_ctrlc_handler().dispatch().await;
 
     log::info!("Closing bot... Goodbye!");
