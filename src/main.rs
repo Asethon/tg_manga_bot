@@ -30,9 +30,9 @@ enum Command {
     #[command(description = "Main menu")]
     Menu,
 
-    #[command(description = "Main menu")]
+    #[command(description = "Add manga")]
     MangaAdd,
-    #[command(description = "Main menu")]
+    #[command(description = "Add chapter")]
     ChapterAdd,
 
     #[command(description = "ping-pong")]
