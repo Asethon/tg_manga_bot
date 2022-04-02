@@ -69,7 +69,7 @@ async fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
                 .collect();
             keyboard.push(vec![InlineKeyboardButton::callback(
                 "Добавить мангу".to_owned(),
-                "/manga_add".to_owned(),
+                "/mangaadd".to_owned(),
             )]);
         }
     }
