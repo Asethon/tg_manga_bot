@@ -217,7 +217,7 @@ async fn chapter_id_handler(
 ) -> anyhow::Result<()> {
         match m.text() {
             Some(link) => {
-                bot.send_message(chat.id, link).await?;
+                bot.send_message(m.chat.id, link).await?;
                 dialogue.update(State::InsertChapterLink { chapter_id: String::from(link) }).await?;
             }
             None => ()
