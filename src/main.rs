@@ -156,7 +156,7 @@ async fn callback_handler(
 #[derive(DialogueState, Clone)]
 #[handler_out(anyhow::Result < () >)]
 pub enum State {
-    #[handler(message_handler)]
+    #[handler(callback_handler)]
     Start,
     #[handler(add_manga_title_handler)]
     AddMangaTitle,
@@ -183,18 +183,20 @@ async fn add_manga_title_handler(
 
 async fn add_manga_description_handler(
     bot: AutoSend<Bot>,
-    m: Message,
+    q: CallbackQuery,
     dialogue: MangaDialogue,
     (title, ): (String, ),
 ) -> anyhow::Result<()> {
-    match m.text() {
-        Some(text) => {
-            bot.send_message(m.chat.id, "Manga added").await?;
-            let client = DatabaseConnection::client().await?;
-            MangaRepository::init(client).new(1, title, text.to_string(), "image".to_string()).push().await?;
-            dialogue.update(State::Start).await?;
+    if let Some(text) = q.data {
+        match q.message {
+            Some(Message { id, chat, .. }) => {
+                bot.send_message(chat.id, "Manga added").await?;
+                let client = DatabaseConnection::client().await?;
+                MangaRepository::init(client).new(1, title, text.to_string(), "image".to_string()).push().await?;
+                dialogue.update(State::Start).await?;
+            }
+            None => ()
         }
-        None => ()
     }
     Ok(())
 }
