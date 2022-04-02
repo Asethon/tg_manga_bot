@@ -137,7 +137,7 @@ async fn callback_handler(
                     }
                     "/manga_add" => {
                         bot.send_message(chat.id, "Add chapter...").await?;
-                        manga_dialogue.update(State::AddMangaTitle).await?;
+                        //manga_dialogue.update(State::AddMangaTitle).await?;
                     }
                     "/chapter_add" => {
                         bot.send_message(chat.id, "Add chapter...").await?;
@@ -173,7 +173,7 @@ async fn add_manga_title_handler(
         match q.message {
             Some(Message { id, chat, .. }) => {
                 bot.send_message(chat.id, "Send me description").await?;
-                dialogue.update(State::Description { title: text.into() }).await?;
+                //dialogue.update(State::Description { title: text.into() }).await?;
             }
             None => ()
         }
@@ -181,7 +181,7 @@ async fn add_manga_title_handler(
     Ok(())
 }
 
-async fn add_manga_description_handler(
+/*async fn add_manga_description_handler(
     bot: AutoSend<Bot>,
     m: Message,
     dialogue: MangaDialogue,
@@ -197,7 +197,7 @@ async fn add_manga_description_handler(
         None => ()
     }
     Ok(())
-}
+}*/
 
 impl Default for State {
     fn default() -> Self {
