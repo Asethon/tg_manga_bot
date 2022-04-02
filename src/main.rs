@@ -19,7 +19,6 @@ use crate::database::{
 mod database;
 
 type MangaDialogue = Dialogue<State, InMemStorage<State>>;
-type ChapterDialogue = Dialogue<StateChapters, InMemStorage<StateChapters>>;
 
 #[derive(BotCommand)]
 #[command(rename = "lowercase", description = "These commands are supported:")]
@@ -107,6 +106,7 @@ async fn message_handler(
     Ok(())
 }
 
+
 /// When it receives a callback from a button it edits the message with all
 /// those buttons writing a text with the selected Debian version.
 ///
@@ -116,7 +116,6 @@ async fn callback_handler(
     q: CallbackQuery,
     bot: AutoSend<Bot>,
     manga_dialogue: MangaDialogue,
-    chapter_dialogue: ChapterDialogue,
 ) -> anyhow::Result<()> {
     if let Some(link) = q.data {
         match q.message {
@@ -141,7 +140,7 @@ async fn callback_handler(
                     }
                     "/chapter_add" => {
                         bot.send_message(chat.id, "Add chapter...").await?;
-                        chapter_dialogue.update(StateChapters::InsertChapterId).await?;
+                        manga_dialogue.update(State::InsertChapterId).await?;
                     }
                     _ => {}
                 }
@@ -156,48 +155,52 @@ async fn callback_handler(
 #[derive(DialogueState, Clone)]
 #[handler_out(anyhow::Result < () >)]
 pub enum State {
-    #[handler(callback_handler)]
+    #[handler(message_handler)]
     Start,
+
+    ///Manga
     #[handler(add_manga_title_handler)]
     AddMangaTitle,
     #[handler(add_manga_description_handler)]
     Description { title: String },
+
+    ///Chapter
+    #[handler(chapter_id_handler)]
+    InsertChapterId,
+    #[handler(chapter_link_handler)]
+    InsertChapterLink { chapter_id: String },
 }
 
 async fn add_manga_title_handler(
     bot: AutoSend<Bot>,
-    q: CallbackQuery,
+    m: Message,
     dialogue: MangaDialogue,
 ) -> anyhow::Result<()> {
-    if let Some(text) = q.data {
-        match q.message {
-            Some(Message { id, chat, .. }) => {
-                bot.send_message(chat.id, "Send me description").await?;
-                dialogue.update(State::Description { title: text.into() }).await?;
-            }
-            None => ()
+    match m.text() {
+        Some(text) => {
+            bot.send_message(m.chat.id, "Send me description").await?;
+            dialogue.update(State::Description { title: text.into() }).await?;
         }
+        None => ()
     }
     Ok(())
 }
 
 async fn add_manga_description_handler(
     bot: AutoSend<Bot>,
-    q: CallbackQuery,
+    m: Message,
     dialogue: MangaDialogue,
     (title, ): (String, ),
 ) -> anyhow::Result<()> {
-    if let Some(text) = q.data {
-        match q.message {
-            Some(Message { id, chat, .. }) => {
-                bot.send_message(chat.id, "Manga added").await?;
+        match m.text() {
+            Some(text) => {
+                bot.send_message(m.chat.id, "Manga added").await?;
                 let client = DatabaseConnection::client().await?;
                 MangaRepository::init(client).new(1, title, text.to_string(), "image".to_string()).push().await?;
                 dialogue.update(State::Start).await?;
             }
             None => ()
         }
-    }
     Ok(())
 }
 
@@ -207,43 +210,23 @@ impl Default for State {
     }
 }
 
-
-#[derive(DialogueState, Clone)]
-#[handler_out(anyhow::Result < () >)]
-pub enum StateChapters {
-    #[handler(callback_handler)]
-    Start,
-    #[handler(chapter_id_handler)]
-    InsertChapterId,
-    #[handler(chapter_link_handler)]
-    InsertChapterLink { chapter_id: String },
-}
-
 async fn chapter_id_handler(
     bot: AutoSend<Bot>,
-    q: CallbackQuery,
-    dialogue: ChapterDialogue,
+    m: Message,
+    dialogue: MangaDialogue,
 ) -> anyhow::Result<()> {
-    if let Some(link) = q.data {
-        match q.message {
-            Some(Message { id, chat, .. }) => {
+        match m.text() {
+            Some(link) => {
                 bot.send_message(chat.id, &link).await?;
-                dialogue.update(StateChapters::InsertChapterLink { chapter_id: link }).await?;
+                dialogue.update(State::InsertChapterLink { chapter_id: String::from(link) }).await?;
             }
             None => ()
         }
-    }
     Ok(())
 }
 
 async fn chapter_link_handler() -> anyhow::Result<()> {
     Ok(())
-}
-
-impl Default for StateChapters {
-    fn default() -> Self {
-        Self::Start
-    }
 }
 
 #[tokio::main]
@@ -256,18 +239,18 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let bot = Bot::from_env().auto_send();
 
     let handler = dptree::entry()
-        .branch(Update::filter_message().endpoint(message_handler)
+        .branch(Update::filter_message()
+            .enter_dialogue::<Message, InMemStorage<State>, State>()
+            .dispatch_by::<State>()
         )
         .branch(
             Update::filter_callback_query()
                 .enter_dialogue::<CallbackQuery, InMemStorage<State>, State>()
                 .dispatch_by::<State>()
-                .enter_dialogue::<CallbackQuery, InMemStorage<StateChapters>, StateChapters>()
-                .dispatch_by::<StateChapters>()
         );
 
     Dispatcher::builder(bot, handler)
-        .dependencies(dptree::deps![InMemStorage::<State>::new(), InMemStorage::<StateChapters>::new()])
+        .dependencies(dptree::deps![InMemStorage::<State>::new()])
         .build().setup_ctrlc_handler().dispatch().await;
 
     log::info!("Closing bot... Goodbye!");
