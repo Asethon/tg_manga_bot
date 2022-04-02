@@ -166,17 +166,15 @@ pub enum State {
 
 async fn add_manga_title_handler(
     bot: AutoSend<Bot>,
-    m: Message,
+    q: CallbackQuery,
     dialogue: MangaDialogue,
 ) -> anyhow::Result<()> {
-    match m.text() {
-        Some(text) => {
-            bot.send_message(m.chat.id, "Send me description").await?;
+    match q.message {
+        Some(Message { id, chat, .. }) => {
+            bot.send_message(chat.id, "Send me description").await?;
             dialogue.update(State::Description { title: text.into() }).await?;
         }
-        None => {
-            bot.send_message(m.chat.id, "Send me title.").await?;
-        }
+        None => ()
     }
     Ok(())
 }
