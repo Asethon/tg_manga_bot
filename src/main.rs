@@ -180,7 +180,7 @@ async fn add_manga_title_handler(
         match q.message {
             Some(Message { id, chat, .. }) => {
                 bot.send_message(chat.id, "Send me description").await?;
-                dialogue.update(State::Description { title: text.into() }).await?;
+                //dialogue.update(State::Description { title: text.into() }).await?;
             }
             None => ()
         }
