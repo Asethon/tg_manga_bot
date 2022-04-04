@@ -228,7 +228,7 @@ async fn chapter_id_handler(
     bot: AutoSend<Bot>,
     m: Message,
     dialogue: MangaDialogue,
-    (id,): (i32)
+    (id,): (i32, )
 ) -> anyhow::Result<()> {
     match m.text() {
         Some(link) => {
