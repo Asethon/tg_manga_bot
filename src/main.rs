@@ -33,7 +33,7 @@ enum Command {
     #[command(description = "Add manga")]
     MangaAdd,
     #[command(description = "Add chapter")]
-    ChapterAdd,
+    ChapterAdd { id: i32 },
 
     #[command(description = "Delete manga")]
     MangaDelete(i32),
@@ -115,9 +115,9 @@ async fn message_handler(
                 MangaRepository::init(client).delete(id).await?;
                 bot.send_message(m.chat.id, "Manga deleted").await?;
             }
-            Ok(Command::ChapterAdd) => {
+            Ok(Command::ChapterAdd {id}) => {
                 bot.send_message(m.chat.id, "Add chapter...").await?;
-                manga_dialogue.update(State::InsertChapterId).await?;
+                manga_dialogue.update(State::InsertChapterId { id }).await?;
             }
             Err(_) => {
                 let text = format!("Что-то пошло не так... {}", text);
@@ -180,9 +180,9 @@ pub enum State {
 
     ///Chapter
     #[handler(chapter_id_handler)]
-    InsertChapterId,
+    InsertChapterId { id: i32 },
     #[handler(chapter_link_handler)]
-    InsertChapterLink { chapter_id: String },
+    InsertChapterLink { id: i32, chapter_id: String },
 }
 
 async fn add_manga_title_handler(
@@ -228,18 +228,28 @@ async fn chapter_id_handler(
     bot: AutoSend<Bot>,
     m: Message,
     dialogue: MangaDialogue,
+    (id,): (i32)
 ) -> anyhow::Result<()> {
     match m.text() {
         Some(link) => {
             bot.send_message(m.chat.id, link).await?;
-            dialogue.update(State::InsertChapterLink { chapter_id: String::from(link) }).await?;
+            dialogue.update(State::InsertChapterLink { id, chapter_id: String::from(link) }).await?;
         }
         None => ()
     }
     Ok(())
 }
 
-async fn chapter_link_handler() -> anyhow::Result<()> {
+async fn chapter_link_handler(
+    bot: AutoSend<Bot>,
+    m: Message,
+    dialogue: MangaDialogue,
+    (id, chapter_id): (i32, String)
+) -> anyhow::Result<()> {
+    let client = DatabaseConnection::client().await?;
+    let manga = MangaRepository::init(client).get_by_id(id).await?;
+    let text = format!("{}: Глава {}", manga.title, chapter_id);
+    bot.send_message(m.chat.id, text);
     Ok(())
 }
 
