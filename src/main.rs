@@ -151,7 +151,7 @@ async fn callback_handler(
                     }
                     "/chapter" => {
                         let client = DatabaseConnection::client().await?;
-                        let chapter = ChapterRepository::init(client).await.get_by_id(link_id).await?;
+                        let chapter = ChapterRepository::init(client).get_by_id(link_id).await?;
                         let link = format!("[Глава {}]({})", chapter.id.unwrap(), chapter.link);
                         let keyboard = make_keyboard(Some(chapter.manga_id)).await;
                         bot.edit_message_text(chat.id, id, link).reply_markup(keyboard).parse_mode(MarkdownV2).await?;
