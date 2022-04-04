@@ -183,6 +183,8 @@ pub enum State {
     InsertChapterId { id: i32 },
     #[handler(chapter_link_handler)]
     InsertChapterLink { id: i32, chapter_id: String },
+    #[handler(chapter_insert_handler)]
+    InsertChapter { id: i32, chapter_id: String, link: String },
 }
 
 async fn add_manga_title_handler(
@@ -231,9 +233,9 @@ async fn chapter_id_handler(
     (id,): (i32, )
 ) -> anyhow::Result<()> {
     match m.text() {
-        Some(link) => {
-            bot.send_message(m.chat.id, link).await?;
-            dialogue.update(State::InsertChapterLink { id, chapter_id: String::from(link) }).await?;
+        Some(chapter_id) => {
+            bot.send_message(m.chat.id, "Send link:").await?;
+            dialogue.update(State::InsertChapterLink { id, chapter_id: chapter_id.to_string() }).await?;
         }
         None => ()
     }
@@ -246,10 +248,26 @@ async fn chapter_link_handler(
     dialogue: MangaDialogue,
     (id, chapter_id): (i32, String)
 ) -> anyhow::Result<()> {
+    match m.text() {
+        Some(link) => {
+            dialogue.update(State::InsertChapter { id, chapter_id, link: link.to_string()}).await?;
+        }
+        None => ()
+    }
+    Ok(())
+}
+
+async fn chapter_insert_handler(
+    bot: AutoSend<Bot>,
+    m: Message,
+    dialogue: MangaDialogue,
+    (id, chapter_id, link): (i32, String, String)
+) -> anyhow::Result<()> {
     let client = DatabaseConnection::client().await?;
     let manga = MangaRepository::init(client).get_by_id(id).await?;
-    let text = format!("{}: Глава {}", manga.title, chapter_id);
-    bot.send_message(m.chat.id, text).await?;
+    let text = format!("{} [Глава {}]({})", manga.title, chapter_id, link);
+    bot.send_message(m.chat.id, text).parse_mode(MarkdownV2).await?;
+    dialogue.update(State::Start).await?;
     Ok(())
 }
 
