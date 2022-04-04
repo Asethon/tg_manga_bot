@@ -48,7 +48,7 @@ async fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
     let mut keyboard: Vec<Vec<InlineKeyboardButton>> = vec![];
     match manga_id {
         Some(id) => {
-            row = ChapterRepository::init(client).await.list_by_manga_id(id).await.unwrap()
+            row = ChapterRepository::init(client).list_by_manga_id(id).await.unwrap()
                 .into_iter()
                 .map(|chapter| {
                     InlineKeyboardButton::callback(
