@@ -113,7 +113,7 @@ async fn message_handler(
             Ok(Command::MangaDelete(id)) => {
                 let client = DatabaseConnection::client().await?;
                 MangaRepository::init(client).delete(id).await?;
-                bot.send_message("Manga deleted").await?;
+                bot.send_message(m.chat.id, "Manga deleted").await?;
             }
             Ok(Command::ChapterAdd) => {
                 bot.send_message(m.chat.id, "Add chapter...").await?;
