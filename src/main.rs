@@ -279,13 +279,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 .endpoint(message_handler)
         )
         .branch(
-            Update::filter_callback_query()
-                .branch(
-                    dptree::entry()
-                        .enter_dialogue::<CallbackQuery, InMemStorage<State>, State>()
-                        .dispatch_by::<State>()
-                )
-                .endpoint(callback_handler)
+            Update::filter_callback_query().endpoint(callback_handler)
         );
 
     Dispatcher::builder(bot, handler)
