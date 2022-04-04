@@ -115,7 +115,7 @@ async fn message_handler(
                 MangaRepository::init(client).delete(id).await?;
                 bot.send_message(m.chat.id, "Manga deleted").await?;
             }
-            Ok(Command::ChapterAdd {id}) => {
+            Ok(Command::ChapterAdd { id }) => {
                 bot.send_message(m.chat.id, "Add chapter...").await?;
                 manga_dialogue.update(State::InsertChapterId { id }).await?;
             }
@@ -183,8 +183,6 @@ pub enum State {
     InsertChapterId { id: i32 },
     #[handler(chapter_link_handler)]
     InsertChapterLink { id: i32, chapter_id: String },
-    #[handler(chapter_insert_handler)]
-    InsertChapter { id: i32, chapter_id: String, link: String },
 }
 
 async fn add_manga_title_handler(
@@ -230,7 +228,7 @@ async fn chapter_id_handler(
     bot: AutoSend<Bot>,
     m: Message,
     dialogue: MangaDialogue,
-    (id,): (i32, )
+    (id, ): (i32, ),
 ) -> anyhow::Result<()> {
     match m.text() {
         Some(chapter_id) => {
@@ -246,28 +244,18 @@ async fn chapter_link_handler(
     bot: AutoSend<Bot>,
     m: Message,
     dialogue: MangaDialogue,
-    (id, chapter_id): (i32, String)
+    (id, chapter_id): (i32, String),
 ) -> anyhow::Result<()> {
     match m.text() {
         Some(link) => {
-            dialogue.update(State::InsertChapter { id, chapter_id, link: link.to_string()}).await?;
+            let client = DatabaseConnection::client().await?;
+            let manga = MangaRepository::init(client).get_by_id(id).await?;
+            let text = format!("{} [Глава {}]({})", manga.title, chapter_id, link);
+            bot.send_message(m.chat.id, text).parse_mode(MarkdownV2).await?;
+            dialogue.update(State::Start).await?;
         }
         None => ()
     }
-    Ok(())
-}
-
-async fn chapter_insert_handler(
-    bot: AutoSend<Bot>,
-    m: Message,
-    dialogue: MangaDialogue,
-    (id, chapter_id, link): (i32, String, String)
-) -> anyhow::Result<()> {
-    let client = DatabaseConnection::client().await?;
-    let manga = MangaRepository::init(client).get_by_id(id).await?;
-    let text = format!("{} [Глава {}]({})", manga.title, chapter_id, link);
-    bot.send_message(m.chat.id, text).parse_mode(MarkdownV2).await?;
-    dialogue.update(State::Start).await?;
     Ok(())
 }
 
