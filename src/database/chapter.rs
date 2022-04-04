@@ -38,7 +38,7 @@ impl ChapterRepository {
 
     pub async fn push(&self) -> Result<(), Error> {
         let chapter = self.chapter.as_ref().unwrap();
-        self.client.execute("INSERT INTO chapters () VALUES ($1, $2, $3, $4)",
+        self.client.execute("INSERT INTO chapters (manga_id, translator_id, chapter_id, link) VALUES ($1, $2, $3, $4)",
                             &[&chapter.manga_id, &chapter.translator_id, &chapter.chapter_id, &chapter.link]).await?;
         Ok(())
     }
