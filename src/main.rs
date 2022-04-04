@@ -35,6 +35,9 @@ enum Command {
     #[command(description = "Add chapter")]
     ChapterAdd,
 
+    #[command(description = "Delete manga")]
+    MangaDelete(i32),
+
     #[command(description = "ping-pong")]
     Ping,
 }
@@ -63,7 +66,7 @@ async fn make_keyboard(manga_id: Option<i32>) -> InlineKeyboardMarkup {
             row = MangaRepository::init(client).list().await.unwrap()
                 .into_iter()
                 .map(|manga| InlineKeyboardButton::callback(
-                    manga.title.to_owned(),
+                    manga.title.to_owned() + "[" + &manga.id.unwrap().to_string() + "]",
                     "/manga?".to_owned() + &manga.id.unwrap().to_string())
                 )
                 .collect();
@@ -106,6 +109,11 @@ async fn message_handler(
             Ok(Command::MangaAdd) => {
                 bot.send_message(m.chat.id, "Add manga...").await?;
                 manga_dialogue.update(State::AddMangaTitle).await?;
+            }
+            Ok(Command::MangaDelete(id)) => {
+                let client = DatabaseConnection::client().await?;
+                MangaRepository::init(client).delete(id).await?;
+                bot.send_message("Manga deleted").await?;
             }
             Ok(Command::ChapterAdd) => {
                 bot.send_message(m.chat.id, "Add chapter...").await?;

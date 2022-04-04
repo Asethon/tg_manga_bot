@@ -1,5 +1,6 @@
 #![allow(unused)]
 
+use std::process::id;
 use crate::database;
 use tokio_postgres::{Client, Error};
 use database::database::DatabaseConnection;
@@ -17,7 +18,7 @@ pub struct MangaRepository {
     manga: Option<Manga>,
 }
 
-impl MangaRepository  {
+impl MangaRepository {
     pub fn init(client: Client) -> MangaRepository {
         MangaRepository { client, manga: None }
     }
@@ -46,7 +47,7 @@ impl MangaRepository  {
     pub async fn update(&self) -> Result<(), Error> {
         let manga = self.manga.as_ref().unwrap();
         self.client.execute("UPDATE manga SET group_id=$1, title=$2, description=$3, img=$4",
-                            &[&manga.group_id, &manga.title, &manga.description, &manga.img]
+                            &[&manga.group_id, &manga.title, &manga.description, &manga.img],
         ).await?;
 
         Ok(())
@@ -64,14 +65,9 @@ impl MangaRepository  {
         })
     }
 
-    pub async fn delete(&self) -> Result<(), Error> {
-        match self.manga.as_ref().unwrap().id {
-            Some(id) => {
-                self.client.execute("DELETE FROM manga WHERE id=$1", &[&id]).await?;
-                Ok(())
-            }
-            None => Ok(())
-        }
+    pub async fn delete(&self, id: i32) -> Result<(), Error> {
+        self.client.execute("DELETE FROM manga WHERE id=$1", &[&id]).await?;
+        Ok(())
     }
 
     pub async fn list(&self) -> Result<Vec<Manga>, Error> {
