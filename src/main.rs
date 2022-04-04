@@ -249,9 +249,8 @@ async fn chapter_link_handler(
     match m.text() {
         Some(link) => {
             let client = DatabaseConnection::client().await?;
-            let manga = MangaRepository::init(client).get_by_id(id).await?;
-            let text = format!("{} [Глава {}]({})", manga.title, chapter_id, link);
-            bot.send_message(m.chat.id, text).parse_mode(MarkdownV2).await?;
+            ChapterRepository::init(client).new(id, 1, chapter_id, link.to_string());
+            bot.send_message(m.chat.id, "Manga added. /menu").await?;
             dialogue.update(State::Start).await?;
         }
         None => ()
