@@ -249,7 +249,7 @@ async fn chapter_link_handler(
     let client = DatabaseConnection::client().await?;
     let manga = MangaRepository::init(client).get_by_id(id).await?;
     let text = format!("{}: Глава {}", manga.title, chapter_id);
-    bot.send_message(m.chat.id, text);
+    bot.send_message(m.chat.id, text).await?;
     Ok(())
 }
 
