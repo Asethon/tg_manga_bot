@@ -20,7 +20,7 @@ impl DatabaseConnection {
     }
 }
 
-pub trait Repository {
+pub trait Repository<T> {
     fn default() -> T {
         T{ client: Client, element: None }
     }
