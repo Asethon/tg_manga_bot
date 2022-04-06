@@ -1,4 +1,5 @@
 use tokio_postgres::{Client, NoTls, Error};
+use crate::database::manga::Manga;
 
 pub struct DatabaseConnection {}
 
@@ -20,21 +21,36 @@ impl DatabaseConnection {
     }
 }
 
+pub trait RepositoryS{}
+
 pub struct RepositoryStruct<T> {
     client: Client,
     element: Option<T>,
 }
 
-pub trait Repository<T> {
-    fn new(client: Client) -> RepositoryStruct<T> {
+impl RepositoryS for RepositoryStruct<Manga> {
+
+}
+
+pub trait Repository<T, R>
+where
+R: RepositoryS
+{
+    fn new(client: Client) -> R {
         RepositoryStruct { client, element: None }
     }
 
-    fn get(&self: RepositoryStruct<T>) -> &T {
+    fn get(&self) -> &T
+    where
+    Self: RepositoryS
+    {
         self.element.as_ref().unwrap()
     }
 
-    fn set(&mut self: RepositoryStruct<T>, element: T) -> RepositoryStruct<T> {
+    fn set(&mut self, element: T) -> R
+    where
+    Self: RepositoryS
+    {
         self.element = Option::from(element);
         self
     }
