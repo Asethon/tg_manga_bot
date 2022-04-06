@@ -20,12 +20,22 @@ impl DatabaseConnection {
     }
 }
 
-pub trait Repository<R, T> {
-    fn default() -> R {
-        R{ client: Client, element: None }
+pub struct RepositoryStruct<T> {
+    client: Client,
+    element: Option<T>,
+}
+
+pub trait Repository<T> {
+    fn new(client: Client) -> RepositoryStruct<T> {
+        RepositoryStruct { client, element: None }
     }
 
-    fn get(&self) -> &T {
-        self.T.as_ref().unwrap()
+    fn get(&self: RepositoryStruct<T>) -> &T {
+        self.element.as_ref().unwrap()
+    }
+
+    fn set(&mut self: RepositoryStruct<T>, element: T) -> RepositoryStruct<T> {
+        self.element = Option::from(element);
+        self
     }
 }
