@@ -19,3 +19,13 @@ impl DatabaseConnection {
         Ok(client)
     }
 }
+
+pub trait Repository {
+    fn default() -> T {
+        T{ client: Client, element: None }
+    }
+
+    fn get(&self) -> &T {
+        self.T.as_ref().unwrap()
+    }
+}
