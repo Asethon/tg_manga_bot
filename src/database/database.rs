@@ -20,38 +20,3 @@ impl DatabaseConnection {
         Ok(client)
     }
 }
-
-pub trait RepositoryS{}
-
-pub struct RepositoryStruct<T> {
-    client: Client,
-    element: Option<T>,
-}
-
-impl RepositoryS for RepositoryStruct<Manga> {
-
-}
-
-pub trait Repository<T, R>
-where
-R: RepositoryS
-{
-    fn new(client: Client) -> R {
-        RepositoryStruct { client, element: None }
-    }
-
-    fn get(&self) -> &T
-    where
-    Self: RepositoryS
-    {
-        self.element.as_ref().unwrap()
-    }
-
-    fn set(&mut self, element: T) -> R
-    where
-    Self: RepositoryS
-    {
-        self.element = Option::from(element);
-        self
-    }
-}
