@@ -30,7 +30,9 @@ impl Repository {
     }
 
     pub async fn find_by_id(&self, id: i32) -> chapter::Model {
-        let chapter: Option<chapter::Model> = domain::Chapter::find_by_id(id).one(&self.db).await.unwrap();
+        let chapter: Option<chapter::Model> = domain::Chapter::find_by_id(id).one(&self.db).await.unwrap_or_else({
+            println!("error");
+        });
         chapter.unwrap()
     }
 

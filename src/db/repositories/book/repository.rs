@@ -30,7 +30,9 @@ impl Repository {
     }
 
     pub async fn find_by_id(&self, id: i32) -> book::Model {
-        let book: Option<book::Model> = domain::Book::find_by_id(id).one(&self.db).await.unwrap();
+        let book: Option<book::Model> = domain::Book::find_by_id(id).one(&self.db).await.unwrap_or_else({
+            println!("error");
+        });
         book.unwrap()
     }
 
@@ -38,7 +40,10 @@ impl Repository {
         let book: Option<book::Model> = domain::Book::find()
             .filter(book::Column::Title.contains(title))
             .one(&self.db)
-            .await.unwrap();
+            .await
+            .unwrap_or_else({
+                println!("error");
+            });
         book.unwrap()
     }
 
