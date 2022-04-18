@@ -228,7 +228,7 @@ async fn add_book_description_handler(
             let db = get_db().await;
             let repository = BookRepository { db };
             repository.insert(
-                BookType::try_from(book_type).unwrap(),
+                BookType::try_from(&*book_type).unwrap(),
                 title,
                 description.into(),
                 "None".into()
