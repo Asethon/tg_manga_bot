@@ -105,9 +105,9 @@ async fn message_handler(
                 dialogue.update(State::AddBookTitle).await?;
             }
 
-            Ok(Command::ChapterAdd { .. }) => {
-                /*bot.send_message(m.chat.id, "Введите название произведения: ").await?;
-                dialogue.update(State::AddBookTitle).await?;*/
+            Ok(Command::ChapterAdd { id }) => {
+                bot.send_message(m.chat.id, "Введите название произведения: ").await?;
+                dialogue.update(State::AddChapterId { book_id: id }).await?;
             }
 
             Ok(Command::Ping) => {
@@ -172,11 +172,11 @@ pub enum State {
     #[handler(add_book_description_handler)]
     AddBookDescription { title: String, book_type: String },
 
-    /*///Chapter
+    ///Chapter
     #[handler(message_handler)]
     AddChapterId { book_id: i32 },
     #[handler(message_handler)]
-    AddChapterLink { book_id: i32, chapter_id: String },*/
+    AddChapterLink { book_id: i32, chapter_id: String },
 }
 
 async fn get_db() -> DatabaseConnection {
@@ -234,6 +234,43 @@ async fn add_book_description_handler(
                 "None".into()
             ).await;
             bot.send_message(m.chat.id, "Произведение добавлено").await?;
+            dialogue.update(State::Start).await?;
+        }
+    }
+    Ok(())
+}
+
+async fn add_chapter_id_handler(
+    bot: AutoSend<Bot>,
+    m: Message,
+    dialogue: BookDialogue,
+    (book_id, ): (i32, )
+) -> anyhow::Result<()> {
+    match m.text() {
+        None => (),
+        Some(chapter_id) => {
+            bot.send_message(m.chat.id, "Номер главы:").await?;
+            dialogue.update(State::AddChapterLink { book_id, chapter_id: chapter_id.to_string() }).await?;
+        }
+    }
+    Ok(())
+}
+
+async fn add_chapter_link_handler(
+    bot: AutoSend<Bot>,
+    m: Message,
+    dialogue: BookDialogue,
+    (book_id, chapter_id): (i32, String)
+) -> anyhow::Result<()> {
+    match m.text() {
+        None => (),
+        Some(link) => {
+            let user_id = bot.get_me().await?.user.id as i32;
+            let db = get_db().await;
+            let repository = ChapterRepository { db };
+            repository.insert(book_id, user_id, chapter_id, link.to_string()).await;
+            let text = format!("Глава {} добавлена.", chapter_id);
+            bot.send_message(m.chat.id, text).await?;
             dialogue.update(State::Start).await?;
         }
     }
