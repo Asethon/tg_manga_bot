@@ -4,12 +4,12 @@ use sea_orm::entity::prelude::*;
 use serde::Serialize;
 
 #[derive(Debug, Clone, PartialEq, EnumIter, DeriveActiveEnum, Serialize)]
-#[sea_orm(rs_type = "String", db_type = "String(Some(1))")]
+#[sea_orm(rs_type = "i32", db_type = "Integer")]
 pub enum BookType {
-    #[sea_orm(string_value = "manga")]
-    Manga = 0,
-    #[sea_orm(string_value = "ranobe")]
-    Ranobe = 1,
+    #[sea_orm(num_value = 0)]
+    Manga,
+    #[sea_orm(num_value = 1)]
+    Ranobe,
 }
 
 impl TryFrom<i32> for BookType {
