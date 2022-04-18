@@ -31,13 +31,13 @@ impl Repository {
 
     pub async fn find_by_id(&self, id: i32) -> chapter::Model {
         let chapter: Option<chapter::Model> = domain::Chapter::find_by_id(id).one(&self.db).await
-            .unwrap_or(chapter::Model {
+            .unwrap_or(Some(chapter::Model {
                 id: 0,
                 book_id: 0,
                 translator_id: 0,
                 chapter_id: "????".to_string(),
                 link: "????".to_string(),
-            });
+            }));
         chapter.unwrap()
     }
 
