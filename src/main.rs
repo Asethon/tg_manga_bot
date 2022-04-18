@@ -12,8 +12,8 @@ use teloxide::{
 };
 use teloxide::types::ParseMode::MarkdownV2;
 
-mod db;
-mod domain;
+pub mod db;
+pub mod domain;
 
 use db::migrations;
 use crate::db::{BookRepository, ChapterRepository};
