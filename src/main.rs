@@ -17,7 +17,7 @@ mod domain;
 
 use db::migrations;
 use crate::db::{BookRepository, ChapterRepository};
-use crate::domain::BookType;
+use crate::db::repositories::book::repository::domain::books::book::BookType;
 
 
 #[derive(BotCommand)]
