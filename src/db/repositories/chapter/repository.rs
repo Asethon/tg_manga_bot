@@ -3,9 +3,6 @@ use sea_orm::entity::*;
 
 #[path = "../../../domain/mod.rs"]
 mod domain;
-
-use domain::*;
-
 use domain::chapters::chapter;
 
 pub struct Repository {
