@@ -1,9 +1,8 @@
 use sea_orm::entity::prelude::*;
 use sea_orm::entity::*;
 
-#[path = "../../../domain/mod.rs"]
-mod domain;
-use domain::books::book;
+use crate::domain;
+use crate::domain::books::book;
 
 pub struct Repository {
     pub(crate) db: DatabaseConnection,
