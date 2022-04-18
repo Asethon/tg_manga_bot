@@ -249,6 +249,7 @@ impl Default for State {
 #[tokio::main]
 async fn main() {
     dotenv::dotenv().ok();
+    up_database();
     let bot = Bot::from_env().auto_send();
 
     let handler = dptree::entry()
