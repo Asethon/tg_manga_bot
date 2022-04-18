@@ -1,3 +1,4 @@
+use sea_orm::DatabaseConnection;
 use teloxide::Bot;
 use teloxide::{
     payloads::SendMessageSetters,
@@ -12,9 +13,12 @@ use teloxide::{
 use teloxide::types::ParseMode::MarkdownV2;
 
 mod db;
+mod domain;
 
 use db::migrations;
 use crate::db::{BookRepository, ChapterRepository};
+use crate::domain::BookType;
+
 
 #[derive(BotCommand)]
 #[command(rename = "lowercase", description = "These commands are supported:")]
@@ -26,8 +30,12 @@ enum Command {
     #[command(description = "Ping-pong")]
     Ping,
 
-    /*#[command(description = "Добавить произведение")]
-    BookAdd,*/
+    #[command(description = "Добавить произведение")]
+    BookAdd,
+
+    #[command(description = "Добавить произведение")]
+    ChapterAdd { id: i32 },
+
 
     #[command(description = "Главное меню")]
     Menu,
@@ -75,6 +83,7 @@ async fn make_keyboard(book_id: Option<i32>) -> InlineKeyboardMarkup {
 async fn message_handler(
     m: Message,
     bot: AutoSend<Bot>,
+    dialogue: BookDialogue,
 ) -> anyhow::Result<()> {
     if let Some(text) = m.text() {
         match BotCommand::parse(text, "buttons") {
@@ -89,6 +98,16 @@ async fn message_handler(
             Ok(Command::Menu) => {
                 let keyboard = make_keyboard(None).await;
                 bot.send_message(m.chat.id, "Каталог:").reply_markup(keyboard).await?;
+            }
+
+            Ok(Command::BookAdd) => {
+                bot.send_message(m.chat.id, "Введите название произведения: ").await?;
+                dialogue.update(State::AddBookTitle).await?;
+            }
+
+            Ok(Command::ChapterAdd { .. }) => {
+                /*bot.send_message(m.chat.id, "Введите название произведения: ").await?;
+                dialogue.update(State::AddBookTitle).await?;*/
             }
 
             Ok(Command::Ping) => {
@@ -144,6 +163,81 @@ type BookDialogue = Dialogue<State, InMemStorage<State>>;
 pub enum State {
     #[handler(message_handler)]
     Start,
+
+    ///Book
+    #[handler(add_book_title_handler)]
+    AddBookTitle,
+    #[handler(add_book_type_handler)]
+    AddBookType { title: String },
+    #[handler(add_book_description_handler)]
+    AddBookDescription { title: String, book_type: String },
+
+    /*///Chapter
+    #[handler(message_handler)]
+    AddChapterId { book_id: i32 },
+    #[handler(message_handler)]
+    AddChapterLink { book_id: i32, chapter_id: String },*/
+}
+
+async fn get_db() -> DatabaseConnection {
+    let url = dotenv::var("DATABASE_URL").unwrap();
+    let db = sea_orm::Database::connect(url).await.unwrap();
+    db
+}
+
+async fn add_book_title_handler(
+    bot: AutoSend<Bot>,
+    m: Message,
+    dialogue: BookDialogue,
+) -> anyhow::Result<()> {
+    match m.text() {
+        None => (),
+        Some(title) => {
+            bot.send_message(m.chat.id, "Тип произведения (manga, ranobe):").await?;
+            dialogue.update(State::AddBookType { title: title.into() }).await?;
+        }
+    }
+    Ok(())
+}
+
+async fn add_book_type_handler(
+    bot: AutoSend<Bot>,
+    m: Message,
+    dialogue: BookDialogue,
+    (title, ): (String, )
+) -> anyhow::Result<()> {
+    match m.text() {
+        None => (),
+        Some(book_type) => {
+            bot.send_message(m.chat.id, "Описание произведения:").await?;
+            dialogue.update(State::AddBookDescription { title: title.into(), book_type: book_type.into() }).await?;
+        }
+    }
+    Ok(())
+}
+
+async fn add_book_description_handler(
+    bot: AutoSend<Bot>,
+    m: Message,
+    dialogue: BookDialogue,
+    (title, book_type): (String, String )
+) -> anyhow::Result<()> {
+    match m.text() {
+        None => (),
+        Some(description) => {
+            let db = get_db().await;
+            let repository = BookRepository { db };
+            repository.insert(
+                BookType::try_from(book_type).unwrap(),
+                title,
+                description.into(),
+                "None".into()
+            ).await;
+            bot.send_message(m.chat.id, "Произведение добавлено").await?;
+            dialogue.update(State::Start).await?;
+        }
+    }
+    Ok(())
 }
 
 impl Default for State {

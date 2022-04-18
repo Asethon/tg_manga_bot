@@ -12,6 +12,18 @@ pub enum BookType {
     Ranobe,
 }
 
+impl TryFrom<&str> for BookType {
+    type Error = ();
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
+            "manga" => Ok(Self::Manga),
+            "ranobe" => Ok(Self::Ranobe),
+            _ => Err(())
+        }
+    }
+}
+
 impl TryFrom<i32> for BookType {
     type Error = ();
 
