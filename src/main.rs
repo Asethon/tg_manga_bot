@@ -36,7 +36,6 @@ enum Command {
     #[command(description = "Добавить произведение")]
     ChapterAdd { id: i32 },
 
-
     #[command(description = "Главное меню")]
     Menu,
 }
@@ -73,6 +72,10 @@ async fn make_keyboard(book_id: Option<i32>) -> InlineKeyboardMarkup {
                     )
                 })
                 .collect();
+            row.push(InlineKeyboardButton::callback(
+                "Добавить".to_owned(),
+                "/book_add".to_owned(),
+            ));
         }
     }
 
@@ -126,10 +129,11 @@ async fn message_handler(
 async fn callback_handler(
     q: CallbackQuery,
     bot: AutoSend<Bot>,
+    dialogue: BookDialogue,
 ) -> anyhow::Result<()> {
     if let Some(link) = q.data {
         match q.message {
-            Some(Message { chat, .. }) => {
+            Some(Message { id, chat, .. }) => {
                 let split: Vec<&str> = link.split('?').collect();
                 let link_id: i32 = split[1].parse::<i32>().unwrap();
                 match split[0] {
@@ -144,7 +148,14 @@ async fn callback_handler(
                         let chapter = repository.find_by_id(link_id).await;
                         let keyboard = make_keyboard(Some(chapter.book_id)).await;
                         let link = format!("[Глава {}]({})", chapter.id, chapter.link);
-                        bot.send_message(chat.id, link).reply_markup(keyboard).parse_mode(MarkdownV2).await?;
+                        bot.edit_message_text(chat.id, id, link)
+                            .reply_markup(keyboard)
+                            .parse_mode(MarkdownV2)
+                            .await?;
+                    }
+                    "/book_add" => {
+                        bot.send_message(chat.id, "Введите название произведения: ").await?;
+                        dialogue.update(State::AddBookTitle).await?;
                     }
                     _ => {}
                 }
@@ -204,7 +215,7 @@ async fn add_book_type_handler(
     bot: AutoSend<Bot>,
     m: Message,
     dialogue: BookDialogue,
-    (title, ): (String, )
+    (title, ): (String, ),
 ) -> anyhow::Result<()> {
     match m.text() {
         None => (),
@@ -220,7 +231,7 @@ async fn add_book_description_handler(
     bot: AutoSend<Bot>,
     m: Message,
     dialogue: BookDialogue,
-    (title, book_type): (String, String )
+    (title, book_type): (String, String),
 ) -> anyhow::Result<()> {
     match m.text() {
         None => (),
@@ -231,7 +242,7 @@ async fn add_book_description_handler(
                 BookType::try_from(&*book_type).unwrap(),
                 title,
                 description.into(),
-                "None".into()
+                "None".into(),
             ).await;
             bot.send_message(m.chat.id, "Произведение добавлено").await?;
             dialogue.update(State::Start).await?;
@@ -244,7 +255,7 @@ async fn add_chapter_id_handler(
     bot: AutoSend<Bot>,
     m: Message,
     dialogue: BookDialogue,
-    (book_id, ): (i32, )
+    (book_id, ): (i32, ),
 ) -> anyhow::Result<()> {
     match m.text() {
         None => (),
@@ -260,7 +271,7 @@ async fn add_chapter_link_handler(
     bot: AutoSend<Bot>,
     m: Message,
     dialogue: BookDialogue,
-    (book_id, chapter_id): (i32, String)
+    (book_id, chapter_id): (i32, String),
 ) -> anyhow::Result<()> {
     match m.text() {
         None => (),
