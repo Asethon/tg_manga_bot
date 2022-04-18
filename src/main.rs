@@ -268,7 +268,7 @@ async fn add_chapter_link_handler(
             let user_id = bot.get_me().await?.user.id as i32;
             let db = get_db().await;
             let repository = ChapterRepository { db };
-            repository.insert(book_id, user_id, chapter_id, link.to_string()).await;
+            repository.insert(book_id, user_id, chapter_id.clone(), link.to_string()).await;
             let text = format!("Глава {} добавлена.", chapter_id);
             bot.send_message(m.chat.id, text).await?;
             dialogue.update(State::Start).await?;
