@@ -41,9 +41,8 @@ enum Command {
 }
 
 async fn make_keyboard(book_id: Option<i32>) -> InlineKeyboardMarkup {
+    let db = get_db().await;
     let mut row = vec![];
-    let url = dotenv::var("DATABASE_URL").unwrap();
-    let db = sea_orm::Database::connect(url).await.unwrap();
     let mut keyboard: Vec<Vec<InlineKeyboardButton>> = vec![];
 
     match book_id {
@@ -58,6 +57,11 @@ async fn make_keyboard(book_id: Option<i32>) -> InlineKeyboardMarkup {
                     InlineKeyboardButton::callback(ch, link)
                 })
                 .collect();
+            let link = format!("/chapter?{}", id);
+            row.push(InlineKeyboardButton::callback(
+                "Добавить".to_owned(),
+                link,
+            ));
         }
         None => {
             let repository = BookRepository { db: db.clone() };
