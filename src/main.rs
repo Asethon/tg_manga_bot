@@ -106,7 +106,7 @@ async fn message_handler(
             }
 
             Ok(Command::ChapterAdd { id }) => {
-                bot.send_message(m.chat.id, "Введите название произведения: ").await?;
+                bot.send_message(m.chat.id, "Номер главы:").await?;
                 dialogue.update(State::AddChapterId { book_id: id }).await?;
             }
 
@@ -173,9 +173,9 @@ pub enum State {
     AddBookDescription { title: String, book_type: String },
 
     ///Chapter
-    #[handler(message_handler)]
+    #[handler(add_chapter_id_handler)]
     AddChapterId { book_id: i32 },
-    #[handler(message_handler)]
+    #[handler(add_chapter_link_handler)]
     AddChapterLink { book_id: i32, chapter_id: String },
 }
 
@@ -249,7 +249,7 @@ async fn add_chapter_id_handler(
     match m.text() {
         None => (),
         Some(chapter_id) => {
-            bot.send_message(m.chat.id, "Номер главы:").await?;
+            bot.send_message(m.chat.id, "Ссылка:").await?;
             dialogue.update(State::AddChapterLink { book_id, chapter_id: chapter_id.to_string() }).await?;
         }
     }
