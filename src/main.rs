@@ -300,7 +300,6 @@ async fn main() {
         .branch(Update::filter_message()
             .enter_dialogue::<Message, InMemStorage<State>, State>()
             .branch(teloxide::handler![State::Start].endpoint(message_handler))
-            ///Book
             .branch(
                 teloxide::handler![State::AddBookTitle]
                     .endpoint(add_book_title_handler)
@@ -313,7 +312,6 @@ async fn main() {
                 teloxide::handler![State::AddBookDescription { title, book_type }]
                     .endpoint(add_book_description_handler)
             )
-            ///Chapter
             .branch(
                 teloxide::handler![State::AddChapterId { book_id }]
                     .endpoint(add_chapter_id_handler)
