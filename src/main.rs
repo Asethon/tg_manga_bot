@@ -2,14 +2,14 @@ use sea_orm::DatabaseConnection;
 use teloxide::Bot;
 use teloxide::{
     payloads::SendMessageSetters,
-    prelude2::*,
+    prelude::*,
     types::{
         InlineKeyboardButton, InlineKeyboardMarkup,
     },
     utils::command::BotCommand,
     dispatching2::dialogue::InMemStorage,
-    macros::DialogueState,
 };
+use teloxide::dispatching::dialogue::InMemStorage;
 use teloxide::types::ParseMode::MarkdownV2;
 
 pub mod db;
@@ -173,26 +173,6 @@ async fn callback_handler(
 
 type BookDialogue = Dialogue<State, InMemStorage<State>>;
 
-#[derive(DialogueState, Clone)]
-#[handler_out(anyhow::Result < () >)]
-pub enum State {
-    #[handler(message_handler)]
-    Start,
-
-    ///Book
-    #[handler(add_book_title_handler)]
-    AddBookTitle,
-    #[handler(add_book_type_handler)]
-    AddBookType { title: String },
-    #[handler(add_book_description_handler)]
-    AddBookDescription { title: String, book_type: String },
-
-    ///Chapter
-    #[handler(add_chapter_id_handler)]
-    AddChapterId { book_id: i32 },
-    #[handler(add_chapter_link_handler)]
-    AddChapterLink { book_id: i32, chapter_id: String },
-}
 
 async fn get_db() -> DatabaseConnection {
     let url = dotenv::var("DATABASE_URL").unwrap();
@@ -298,6 +278,18 @@ impl Default for State {
     }
 }
 
+#[derive(Clone)]
+pub enum State {
+    Start,
+    ///Book
+    AddBookTitle,
+    AddBookType { title: String },
+    AddBookDescription { title: String, book_type: String },
+    ///Chapter
+    AddChapterId { book_id: i32 },
+    AddChapterLink { book_id: i32, chapter_id: String },
+}
+
 #[tokio::main]
 async fn main() {
     dotenv::dotenv().ok();
@@ -306,8 +298,30 @@ async fn main() {
 
     let handler = dptree::entry()
         .branch(Update::filter_message()
-                    .enter_dialogue::<Message, InMemStorage<State>, State>()
-                    .dispatch_by::<State>(),
+            .enter_dialogue::<Message, InMemStorage<State>, State>()
+            .branch(teloxide::handler![State::Start].endpoint(message_handler))
+            ///Book
+            .branch(
+                teloxide::handler![State::AddBookTitle]
+                    .endpoint(add_book_title_handler)
+            )
+            .branch(
+                teloxide::handler![State::AddBookType { title }]
+                    .endpoint(add_book_type_handler)
+            )
+            .branch(
+                teloxide::handler![State::AddBookDescription { title, book_type }]
+                    .endpoint(add_book_description_handler)
+            )
+            ///Chapter
+            .branch(
+                teloxide::handler![State::AddChapterId { book_id }]
+                    .endpoint(add_chapter_id_handler)
+            )
+            .branch(
+                teloxide::handler![State::AddChapterLink { book_id, chapter_id }]
+                    .endpoint(add_chapter_link_handler)
+            )
         )
         .branch(Update::filter_callback_query().endpoint(callback_handler));
 
