@@ -5,12 +5,11 @@ use teloxide::{
     prelude::*,
     types::{
         InlineKeyboardButton, InlineKeyboardMarkup,
+        ParseMode::MarkdownV2
     },
     utils::command::BotCommands,
-    dispatching2::dialogue::InMemStorage,
+    dispatching::dialogue::InMemStorage,
 };
-use teloxide::dispatching::dialogue::InMemStorage;
-use teloxide::types::ParseMode::MarkdownV2;
 
 pub mod db;
 pub mod domain;
