@@ -19,7 +19,7 @@ use crate::db::{BookRepository, ChapterRepository};
 use crate::domain::books::book::BookType;
 
 
-#[derive(BotCommands)]
+#[derive(BotCommands, Clone)]
 #[command(rename = "lowercase", description = "These commands are supported:")]
 enum Command {
     #[command(description = ":)")]
@@ -90,12 +90,12 @@ async fn message_handler(
     m: Message,
     bot: AutoSend<Bot>,
     dialogue: BookDialogue,
+    command: Command,
 ) -> anyhow::Result<()> {
-    if let Some(text) = m.text() {
-        match BotCommands::parse(text, "buttons") {
+    match command {
             Ok(Command::Help) => {
                 // Just send the description of all commands.
-                bot.send_message(m.chat.id, Command::descriptions()).await?;
+                bot.send_message(m.chat.id, Command::descriptions().to_string()).await?;
             }
             Ok(Command::Start) => {
                 bot.send_message(m.chat.id, "Hi, send me /menu").await?;
@@ -124,7 +124,6 @@ async fn message_handler(
                 bot.send_message(m.chat.id, "Command not found!").await?;
             }
         }
-    }
 
     Ok(())
 }
