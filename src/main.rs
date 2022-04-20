@@ -6,7 +6,7 @@ use teloxide::{
     types::{
         InlineKeyboardButton, InlineKeyboardMarkup,
     },
-    utils::command::BotCommand,
+    utils::command::BotCommands,
     dispatching2::dialogue::InMemStorage,
 };
 use teloxide::dispatching::dialogue::InMemStorage;
@@ -20,7 +20,7 @@ use crate::db::{BookRepository, ChapterRepository};
 use crate::domain::books::book::BookType;
 
 
-#[derive(BotCommand)]
+#[derive(BotCommands)]
 #[command(rename = "lowercase", description = "These commands are supported:")]
 enum Command {
     #[command(description = ":)")]
@@ -93,7 +93,7 @@ async fn message_handler(
     dialogue: BookDialogue,
 ) -> anyhow::Result<()> {
     if let Some(text) = m.text() {
-        match BotCommand::parse(text, "buttons") {
+        match BotCommands::parse(text, "buttons") {
             Ok(Command::Help) => {
                 // Just send the description of all commands.
                 bot.send_message(m.chat.id, Command::descriptions()).await?;
@@ -260,7 +260,7 @@ async fn add_chapter_link_handler(
     match m.text() {
         None => (),
         Some(link) => {
-            let user_id = bot.get_me().await?.user.id as i32;
+            let user_id = bot.get_me().await?.user.id.0 as i32;
             let db = get_db().await;
             let repository = ChapterRepository { db };
             repository.insert(book_id, user_id, chapter_id.clone(), link.to_string()).await;
