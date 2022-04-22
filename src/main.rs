@@ -314,34 +314,36 @@ async fn main() {
             .enter_dialogue::<Message, InMemStorage<State>, State>()
             .filter_command::<Command>()
             .branch(teloxide::handler![State::Start].endpoint(message_handler))
+            .branch(
+                teloxide::handler![State::AddBookTitle]
+                    .endpoint(add_book_title_handler)
+            )
+            .branch(
+                teloxide::handler![State::AddBookType { title }]
+                    .endpoint(add_book_type_handler)
+            )
+            .branch(
+                teloxide::handler![State::AddBookDescription { title, book_type }]
+                    .endpoint(add_book_description_handler)
+            )
+            .branch(
+                teloxide::handler![State::AddChapterId { book_id }]
+                    .endpoint(add_chapter_id_handler)
+            )
+            .branch(
+                teloxide::handler![State::AddChapterLink { book_id, chapter_id }]
+                    .endpoint(add_chapter_link_handler)
+            )
         )
         .branch(
             Update::filter_callback_query()
                 .enter_dialogue::<CallbackQuery, InMemStorage<State>, State>()
+                .branch(
+                    teloxide::handler![State::AddBookTitle]
+                        .endpoint(add_book_title_handler)
+                )
                 .endpoint(callback_handler)
-        )
-        .branch(
-            teloxide::handler![State::AddBookTitle]
-                .endpoint(add_book_title_handler)
-        )
-        .branch(
-            teloxide::handler![State::AddBookType { title }]
-                .endpoint(add_book_type_handler)
-        )
-        .branch(
-            teloxide::handler![State::AddBookDescription { title, book_type }]
-                .endpoint(add_book_description_handler)
-        )
-        .branch(
-            teloxide::handler![State::AddChapterId { book_id }]
-                .endpoint(add_chapter_id_handler)
-        )
-        .branch(
-            teloxide::handler![State::AddChapterLink { book_id, chapter_id }]
-                .endpoint(add_chapter_link_handler)
-        )
-        .enter_dialogue::<Update, InMemStorage<State>, State>()
-        ;
+        );
 
     Dispatcher::builder(bot.clone(), handler)
         .dependencies(dptree::deps![InMemStorage::<State>::new()])
