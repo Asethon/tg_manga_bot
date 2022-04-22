@@ -14,10 +14,12 @@ use teloxide::types::{KeyboardButton, KeyboardMarkup};
 
 pub mod db;
 pub mod domain;
+pub mod utils;
 
 use db::migrations;
 use crate::db::{BookRepository, ChapterRepository};
 use crate::domain::books::book::BookType;
+use crate::utils::keyboard::cancel_markup;
 
 
 #[derive(BotCommands, Clone)]
@@ -38,12 +40,6 @@ enum Command {
 
     #[command(description = "Главное меню")]
     Menu,
-}
-
-fn make_key() -> KeyboardMarkup {
-    let mut keyboard: Vec<Vec<KeyboardButton>> = vec![];
-    keyboard.push(vec![KeyboardButton::new("Button")]);
-    KeyboardMarkup::new(keyboard)
 }
 
 async fn make_keyboard(book_id: Option<i32>) -> InlineKeyboardMarkup {
@@ -105,7 +101,7 @@ async fn message_handler(
             bot.send_message(m.chat.id, Command::descriptions().to_string()).await?;
         }
         Command::Start => {
-            bot.send_message(m.chat.id, "Hi, send me /menu").reply_markup(make_key()).await?;
+            bot.send_message(m.chat.id, "Hi, send me /menu").reply_markup(cancel_markup()).await?;
         }
 
         Command::Menu => {
