@@ -14,3 +14,4 @@ anyhow = "1.0.56"
 dotenv = "0.15.0"
 tokio-postgres = "0.7.5"
 sea-orm = { version = "0.7.1", features = ["sqlx-postgres", "runtime-tokio-rustls", "macros"], default-features = false }
+strum = { version = "0.24.0", features = ["derive"] }

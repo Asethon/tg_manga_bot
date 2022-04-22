@@ -1,4 +1,11 @@
 use teloxide::types::{KeyboardButton, KeyboardMarkup, ReplyMarkup};
+use strum::{AsRefStr, EnumString,};
+
+#[derive(AsRefStr, EnumString)]
+pub enum Command {
+    #[strum(to_string = "/")]
+    Cancel
+}
 
 pub fn make_keyboard(keyboard: Vec<Vec<String>>) -> ReplyMarkup {
     let keyboard: Vec<Vec<KeyboardButton>> = keyboard.iter()
