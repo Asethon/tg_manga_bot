@@ -40,7 +40,6 @@ enum Command {
 }
 
 async fn make_keyboard(book_id: Option<i32>) -> InlineKeyboardMarkup {
-    println!("4");
     let db = get_db().await;
     let mut row = vec![];
     let mut keyboard: Vec<Vec<InlineKeyboardButton>> = vec![];
@@ -93,7 +92,6 @@ async fn message_handler(
     dialogue: BookDialogue,
     command: Command,
 ) -> anyhow::Result<()> {
-    println!("3");
     match command {
         Command::Help => {
             // Just send the description of all commands.
@@ -131,7 +129,6 @@ async fn callback_handler(
     bot: AutoSend<Bot>,
     dialogue: BookDialogue,
 ) -> anyhow::Result<()> {
-    println!("2");
     if let Some(link) = q.data {
         match q.message {
             Some(Message { id, chat, .. }) => {
@@ -289,7 +286,6 @@ impl Default for State {
 
 #[tokio::main]
 async fn main() {
-    println!("1");
     dotenv::dotenv().ok();
     up_database();
     let bot = Bot::from_env().auto_send();
