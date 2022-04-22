@@ -292,10 +292,10 @@ async fn main() {
 
     let handler = dptree::entry()
         .branch(Update::filter_message()
+            .enter_dialogue::<Message, InMemStorage<State>, State>()
             .branch(
                 dptree::entry().filter_command::<Command>()
                     .endpoint(message_handler)
-                    .enter_dialogue::<Message, InMemStorage<State>, State>()
             )
             .branch(teloxide::handler![State::Start].endpoint(message_handler))
             .branch(
