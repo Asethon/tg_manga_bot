@@ -295,8 +295,8 @@ async fn main() {
             .branch(
                 dptree::entry().filter_command::<Command>()
                     .endpoint(message_handler)
+                    .enter_dialogue::<Message, InMemStorage<State>, State>()
             )
-            .enter_dialogue::<Message, InMemStorage<State>, State>()
             .branch(teloxide::handler![State::Start].endpoint(message_handler))
             .branch(
                 teloxide::handler![State::AddBookTitle]
