@@ -133,17 +133,21 @@ async fn callback_handler(
         match q.message {
             Some(Message { id, chat, .. }) => {
                 let split: Vec<&str> = link.split('?').collect();
-                let link_id: i32 = split[1].parse::<i32>().unwrap();
+                let link_id: Option<i32> = if split.len() >= 2 {
+                    Some(split[1].parse::<i32>().unwrap())
+                } else {
+                    None
+                };
                 match split[0] {
                     "/book" => {
-                        let keyboard = make_keyboard(Some(link_id)).await;
+                        let keyboard = make_keyboard(Some(link_id.unwrap())).await;
                         bot.send_message(chat.id, "Главы:").reply_markup(keyboard).await?;
                     }
                     "/chapter" => {
                         let url = dotenv::var("DATABASE_URL").unwrap();
                         let db = sea_orm::Database::connect(url).await.unwrap();
                         let repository = ChapterRepository { db };
-                        let chapter = repository.find_by_id(link_id).await;
+                        let chapter = repository.find_by_id(link_id.unwrap()).await;
                         let keyboard = make_keyboard(Some(chapter.book_id)).await;
                         let link = format!("[Глава {}]({})", chapter.id, chapter.link);
                         bot.edit_message_text(chat.id, id, link)
