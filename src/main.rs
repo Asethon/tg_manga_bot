@@ -91,7 +91,7 @@ async fn message_handler(
     bot: AutoSend<Bot>,
     dialogue: BookDialogue,
     command: Command,
-) -> anyhow::Result<()> {
+) -> Result<(), Box<dyn Error + Send + Sync>> {
     match command {
             Ok(Command::Help) => {
                 // Just send the description of all commands.
@@ -132,7 +132,7 @@ async fn callback_handler(
     q: CallbackQuery,
     bot: AutoSend<Bot>,
     dialogue: BookDialogue,
-) -> anyhow::Result<()> {
+) -> Result<(), Box<dyn Error + Send + Sync>> {
     if let Some(link) = q.data {
         match q.message {
             Some(Message { id, chat, .. }) => {
@@ -198,7 +198,7 @@ async fn add_book_type_handler(
     m: Message,
     dialogue: BookDialogue,
     (title, ): (String, ),
-) -> anyhow::Result<()> {
+) -> HandlerResult {
     match m.text() {
         None => (),
         Some(book_type) => {
@@ -214,7 +214,7 @@ async fn add_book_description_handler(
     m: Message,
     dialogue: BookDialogue,
     (title, book_type): (String, String),
-) -> anyhow::Result<()> {
+) -> HandlerResult {
     match m.text() {
         None => (),
         Some(description) => {
@@ -238,7 +238,7 @@ async fn add_chapter_id_handler(
     m: Message,
     dialogue: BookDialogue,
     (book_id, ): (i32, ),
-) -> anyhow::Result<()> {
+) -> HandlerResult {
     match m.text() {
         None => (),
         Some(chapter_id) => {
@@ -254,7 +254,7 @@ async fn add_chapter_link_handler(
     m: Message,
     dialogue: BookDialogue,
     (book_id, chapter_id): (i32, String),
-) -> anyhow::Result<()> {
+) -> HandlerResult {
     match m.text() {
         None => (),
         Some(link) => {
@@ -296,6 +296,10 @@ async fn main() {
 
     let handler = dptree::entry()
         .branch(Update::filter_message()
+            .branch(
+                dptree::entry().filter_command::<Command>()
+                    .endpoint(message_handler)
+            )
             .enter_dialogue::<Message, InMemStorage<State>, State>()
             .branch(teloxide::handler![State::Start].endpoint(message_handler))
             .branch(
@@ -321,7 +325,7 @@ async fn main() {
         )
         .branch(Update::filter_callback_query().endpoint(callback_handler));
 
-    Dispatcher::builder(bot, handler)
+    Dispatcher::builder(bot.clone(), handler)
         .dependencies(dptree::deps![InMemStorage::<State>::new()])
         .build()
         .setup_ctrlc_handler()
