@@ -7,11 +7,11 @@ pub fn make_keyboard(keyboard: Vec<Vec<String>>) -> ReplyMarkup {
                 .map(|label| KeyboardButton::new(label))
                 .collect()
         }).collect();
-    let markup = KeyboardButton::new(keyboard)
+    let markup = KeyboardMarkup::new(keyboard)
         .resize_keyboard(true);
     ReplyMarkup::Keyboard(markup)
 }
 
 pub fn cancel_markup() -> ReplyMarkup {
-   kb_markup(vec![vec![String::from("/")]])
+   make_keyboard(vec![vec![String::from("/")]])
 }

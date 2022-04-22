@@ -10,7 +10,6 @@ use teloxide::{
     utils::command::BotCommands,
     dispatching::dialogue::InMemStorage,
 };
-use teloxide::types::{KeyboardButton, KeyboardMarkup};
 
 pub mod db;
 pub mod domain;
