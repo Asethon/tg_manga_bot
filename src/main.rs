@@ -10,6 +10,7 @@ use teloxide::{
     utils::command::BotCommands,
     dispatching::dialogue::InMemStorage,
 };
+use teloxide::types::{KeyboardButton, KeyboardMarkup};
 
 pub mod db;
 pub mod domain;
@@ -37,6 +38,12 @@ enum Command {
 
     #[command(description = "Главное меню")]
     Menu,
+}
+
+fn make_key() -> KeyboardMarkup {
+    let mut keyboard: Vec<Vec<KeyboardButton>> = vec![];
+    keyboard.push(vec![KeyboardButton::new("Button")]);
+    KeyboardMarkup::new(keyboard)
 }
 
 async fn make_keyboard(book_id: Option<i32>) -> InlineKeyboardMarkup {
@@ -98,7 +105,7 @@ async fn message_handler(
             bot.send_message(m.chat.id, Command::descriptions().to_string()).await?;
         }
         Command::Start => {
-            bot.send_message(m.chat.id, "Hi, send me /menu").await?;
+            bot.send_message(m.chat.id, "Hi, send me /menu").reply_markup(make_key()).await?;
         }
 
         Command::Menu => {
@@ -199,7 +206,9 @@ async fn add_book_title_handler(
     dialogue: BookDialogue,
 ) -> anyhow::Result<()> {
     match m.text() {
-        None => (),
+        None => {
+            dialogue.update(State::Start).await?;
+        },
         Some(title) => {
             bot.send_message(m.chat.id, "Тип произведения (manga, ranobe):").await?;
             dialogue.update(State::AddBookType { title: title.into() }).await?;
@@ -215,7 +224,9 @@ async fn add_book_type_handler(
     (title, ): (String, ),
 ) -> anyhow::Result<()> {
     match m.text() {
-        None => (),
+        None => {
+            dialogue.update(State::Start).await?;
+        },
         Some(book_type) => {
             bot.send_message(m.chat.id, "Описание произведения:").await?;
             dialogue.update(State::AddBookDescription { title: title.into(), book_type: book_type.into() }).await?;
@@ -231,7 +242,9 @@ async fn add_book_description_handler(
     (title, book_type): (String, String),
 ) -> anyhow::Result<()> {
     match m.text() {
-        None => (),
+        None => {
+            dialogue.update(State::Start).await?;
+        },
         Some(description) => {
             let db = get_db().await;
             let repository = BookRepository { db };
@@ -255,7 +268,9 @@ async fn add_chapter_id_handler(
     (book_id, ): (i32, ),
 ) -> anyhow::Result<()> {
     match m.text() {
-        None => (),
+        None => {
+            dialogue.update(State::Start).await?;
+        },
         Some(chapter_id) => {
             bot.send_message(m.chat.id, "Ссылка:").await?;
             dialogue.update(State::AddChapterLink { book_id, chapter_id: chapter_id.to_string() }).await?;
@@ -271,7 +286,9 @@ async fn add_chapter_link_handler(
     (book_id, chapter_id): (i32, String),
 ) -> anyhow::Result<()> {
     match m.text() {
-        None => (),
+        None => {
+            dialogue.update(State::Start).await?;
+        },
         Some(link) => {
             let user_id = bot.get_me().await?.user.id.0 as i32;
             let db = get_db().await;
