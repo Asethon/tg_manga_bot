@@ -5,7 +5,7 @@ use teloxide::{
     prelude::*,
     types::{
         InlineKeyboardButton, InlineKeyboardMarkup,
-        ParseMode::MarkdownV2
+        ParseMode::MarkdownV2,
     },
     utils::command::BotCommands,
     dispatching::dialogue::InMemStorage,
@@ -93,33 +93,33 @@ async fn message_handler(
     command: Command,
 ) -> anyhow::Result<()> {
     match command {
-            Command::Help => {
-                // Just send the description of all commands.
-                bot.send_message(m.chat.id, Command::descriptions().to_string()).await?;
-            }
-            Command::Start => {
-                bot.send_message(m.chat.id, "Hi, send me /menu").await?;
-            }
-
-            Command::Menu => {
-                let keyboard = make_keyboard(None).await;
-                bot.send_message(m.chat.id, "Каталог:").reply_markup(keyboard).await?;
-            }
-
-            Command::BookAdd => {
-                bot.send_message(m.chat.id, "Введите название произведения: ").await?;
-                dialogue.update(State::AddBookTitle).await?;
-            }
-
-            Command::ChapterAdd { id } => {
-                bot.send_message(m.chat.id, "Номер главы:").await?;
-                dialogue.update(State::AddChapterId { book_id: id }).await?;
-            }
-
-            Command::Ping => {
-                bot.send_message(m.chat.id, "pong").await?;
-            }
+        Command::Help => {
+            // Just send the description of all commands.
+            bot.send_message(m.chat.id, Command::descriptions().to_string()).await?;
         }
+        Command::Start => {
+            bot.send_message(m.chat.id, "Hi, send me /menu").await?;
+        }
+
+        Command::Menu => {
+            let keyboard = make_keyboard(None).await;
+            bot.send_message(m.chat.id, "Каталог:").reply_markup(keyboard).await?;
+        }
+
+        Command::BookAdd => {
+            bot.send_message(m.chat.id, "Введите название произведения: ").await?;
+            dialogue.update(State::AddBookTitle).await?;
+        }
+
+        Command::ChapterAdd { id } => {
+            bot.send_message(m.chat.id, "Номер главы:").await?;
+            dialogue.update(State::AddChapterId { book_id: id }).await?;
+        }
+
+        Command::Ping => {
+            bot.send_message(m.chat.id, "pong").await?;
+        }
+    }
 
     Ok(())
 }
@@ -319,7 +319,11 @@ async fn main() {
                     .endpoint(add_chapter_link_handler)
             )
         )
-        .branch(Update::filter_callback_query().endpoint(callback_handler));
+        .branch(
+            Update::filter_callback_query()
+                .enter_dialogue::<Message, InMemStorage<State>, State>()
+                .endpoint(callback_handler)
+        );
 
     Dispatcher::builder(bot.clone(), handler)
         .dependencies(dptree::deps![InMemStorage::<State>::new()])
