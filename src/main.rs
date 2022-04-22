@@ -46,10 +46,10 @@ fn make_key() -> KeyboardMarkup {
     KeyboardMarkup::new(keyboard)
 }
 
-async fn make_keyboard(book_id: Option<i32>) -> InlineKeyboardMarkup {
+async fn make_keyboard(book_id: Option<i32>) -> KeyboardButton {
     let db = get_db().await;
     let mut row = vec![];
-    let mut keyboard: Vec<Vec<InlineKeyboardButton>> = vec![];
+    let mut keyboard: Vec<Vec<KeyboardButton>> = vec![];
 
     match book_id {
         Some(id) => {
@@ -60,11 +60,11 @@ async fn make_keyboard(book_id: Option<i32>) -> InlineKeyboardMarkup {
                 .map(|chapter| {
                     let ch = format!("Глава: {}", chapter.chapter_id);
                     let link = format!("/chapter?{}", chapter.chapter_id);
-                    InlineKeyboardButton::callback(ch, link)
+                    KeyboardButton::callback(ch, link)
                 })
                 .collect();
             let link = format!("/chapter?{}", id);
-            row.push(InlineKeyboardButton::callback(
+            row.push(KeyboardButton::callback(
                 "Добавить".to_owned(),
                 link,
             ));
@@ -76,13 +76,13 @@ async fn make_keyboard(book_id: Option<i32>) -> InlineKeyboardMarkup {
                 .into_iter()
                 .map(|book| {
                     let link = format!("/book?{}", book.id);
-                    InlineKeyboardButton::callback(
+                    KeyboardButton::callback(
                         book.title.clone(),
                         link,
                     )
                 })
                 .collect();
-            row.push(InlineKeyboardButton::callback(
+            row.push(KeyboardButton::callback(
                 "Добавить".to_owned(),
                 "/book_add".to_owned(),
             ));
@@ -90,7 +90,7 @@ async fn make_keyboard(book_id: Option<i32>) -> InlineKeyboardMarkup {
     }
 
     keyboard.push(row);
-    InlineKeyboardMarkup::new(keyboard)
+    KeyboardButton::new(keyboard)
 }
 
 async fn message_handler(
