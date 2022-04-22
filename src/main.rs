@@ -1,3 +1,4 @@
+use std::error::Error;
 use sea_orm::DatabaseConnection;
 use teloxide::Bot;
 use teloxide::{
@@ -198,7 +199,7 @@ async fn add_book_type_handler(
     m: Message,
     dialogue: BookDialogue,
     (title, ): (String, ),
-) -> HandlerResult {
+) -> anyhow::Result<()> {
     match m.text() {
         None => (),
         Some(book_type) => {
@@ -214,7 +215,7 @@ async fn add_book_description_handler(
     m: Message,
     dialogue: BookDialogue,
     (title, book_type): (String, String),
-) -> HandlerResult {
+) -> anyhow::Result<()> {
     match m.text() {
         None => (),
         Some(description) => {
@@ -238,7 +239,7 @@ async fn add_chapter_id_handler(
     m: Message,
     dialogue: BookDialogue,
     (book_id, ): (i32, ),
-) -> HandlerResult {
+) -> anyhow::Result<()> {
     match m.text() {
         None => (),
         Some(chapter_id) => {
@@ -254,7 +255,7 @@ async fn add_chapter_link_handler(
     m: Message,
     dialogue: BookDialogue,
     (book_id, chapter_id): (i32, String),
-) -> HandlerResult {
+) -> anyhow::Result<()> {
     match m.text() {
         None => (),
         Some(link) => {
