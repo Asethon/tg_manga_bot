@@ -1,4 +1,3 @@
-use std::error::Error;
 use sea_orm::DatabaseConnection;
 use teloxide::Bot;
 use teloxide::{
@@ -92,37 +91,33 @@ async fn message_handler(
     bot: AutoSend<Bot>,
     dialogue: BookDialogue,
     command: Command,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> anyhow::Result<()> {
     match command {
-            Ok(Command::Help) => {
+            Command::Help => {
                 // Just send the description of all commands.
                 bot.send_message(m.chat.id, Command::descriptions().to_string()).await?;
             }
-            Ok(Command::Start) => {
+            Command::Start => {
                 bot.send_message(m.chat.id, "Hi, send me /menu").await?;
             }
 
-            Ok(Command::Menu) => {
+            Command::Menu => {
                 let keyboard = make_keyboard(None).await;
                 bot.send_message(m.chat.id, "Каталог:").reply_markup(keyboard).await?;
             }
 
-            Ok(Command::BookAdd) => {
+            Command::BookAdd => {
                 bot.send_message(m.chat.id, "Введите название произведения: ").await?;
                 dialogue.update(State::AddBookTitle).await?;
             }
 
-            Ok(Command::ChapterAdd { id }) => {
+            Command::ChapterAdd { id } => {
                 bot.send_message(m.chat.id, "Номер главы:").await?;
                 dialogue.update(State::AddChapterId { book_id: id }).await?;
             }
 
-            Ok(Command::Ping) => {
+            Command::Ping => {
                 bot.send_message(m.chat.id, "pong").await?;
-            }
-
-            Err(_) => {
-                bot.send_message(m.chat.id, "Command not found!").await?;
             }
         }
 
@@ -133,7 +128,7 @@ async fn callback_handler(
     q: CallbackQuery,
     bot: AutoSend<Bot>,
     dialogue: BookDialogue,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> anyhow::Result<()> {
     if let Some(link) = q.data {
         match q.message {
             Some(Message { id, chat, .. }) => {
