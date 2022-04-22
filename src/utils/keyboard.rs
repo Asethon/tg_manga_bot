@@ -13,5 +13,5 @@ pub fn make_keyboard(keyboard: Vec<Vec<String>>) -> ReplyMarkup {
 }
 
 pub fn cancel_markup() -> ReplyMarkup {
-   make_keyboard(vec![vec![String::from("/")]])
+   make_keyboard(vec![vec![String::from("/ ")]])
 }
