@@ -4,6 +4,7 @@ use teloxide::{
     payloads::SendMessageSetters,
     prelude::*,
     types::{
+        InlineKeyboardButton, InlineKeyboardMarkup,
         ParseMode::MarkdownV2,
     },
     utils::command::BotCommands,
@@ -45,10 +46,10 @@ fn make_key() -> KeyboardMarkup {
     KeyboardMarkup::new(keyboard)
 }
 
-async fn make_keyboard(book_id: Option<i32>) -> KeyboardMarkup {
+async fn make_keyboard(book_id: Option<i32>) -> InlineKeyboardMarkup {
     let db = get_db().await;
     let mut row = vec![];
-    let mut keyboard: Vec<Vec<KeyboardButton>> = vec![];
+    let mut keyboard: Vec<Vec<InlineKeyboardButton>> = vec![];
 
     match book_id {
         Some(id) => {
@@ -59,11 +60,11 @@ async fn make_keyboard(book_id: Option<i32>) -> KeyboardMarkup {
                 .map(|chapter| {
                     let ch = format!("Глава: {}", chapter.chapter_id);
                     let link = format!("/chapter?{}", chapter.chapter_id);
-                    KeyboardButton::callback(ch, link)
+                    InlineKeyboardButton::callback(ch, link)
                 })
                 .collect();
             let link = format!("/chapter?{}", id);
-            row.push(KeyboardButton::callback(
+            row.push(InlineKeyboardButton::callback(
                 "Добавить".to_owned(),
                 link,
             ));
@@ -75,13 +76,13 @@ async fn make_keyboard(book_id: Option<i32>) -> KeyboardMarkup {
                 .into_iter()
                 .map(|book| {
                     let link = format!("/book?{}", book.id);
-                    KeyboardButton::callback(
+                    InlineKeyboardButton::callback(
                         book.title.clone(),
                         link,
                     )
                 })
                 .collect();
-            row.push(KeyboardButton::callback(
+            row.push(InlineKeyboardButton::callback(
                 "Добавить".to_owned(),
                 "/book_add".to_owned(),
             ));
@@ -89,7 +90,7 @@ async fn make_keyboard(book_id: Option<i32>) -> KeyboardMarkup {
     }
 
     keyboard.push(row);
-    KeyboardMarkup::new(keyboard)
+    InlineKeyboardMarkup::new(keyboard)
 }
 
 async fn message_handler(
