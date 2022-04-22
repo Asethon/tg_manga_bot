@@ -140,20 +140,35 @@ async fn callback_handler(
                 };
                 match split[0] {
                     "/book" => {
-                        let keyboard = make_keyboard(Some(link_id.unwrap())).await;
-                        bot.send_message(chat.id, "Главы:").reply_markup(keyboard).await?;
+                        match link_id {
+                            None => {
+                                bot.send_message(chat.id, "Error").await?;
+                            }
+                            Some(_) => {
+                                let keyboard = make_keyboard(Some(link_id.unwrap())).await;
+                                bot.send_message(chat.id, "Главы:")
+                                    .reply_markup(keyboard).await?;
+                            }
+                        }
                     }
                     "/chapter" => {
-                        let url = dotenv::var("DATABASE_URL").unwrap();
-                        let db = sea_orm::Database::connect(url).await.unwrap();
-                        let repository = ChapterRepository { db };
-                        let chapter = repository.find_by_id(link_id.unwrap()).await;
-                        let keyboard = make_keyboard(Some(chapter.book_id)).await;
-                        let link = format!("[Глава {}]({})", chapter.id, chapter.link);
-                        bot.edit_message_text(chat.id, id, link)
-                            .reply_markup(keyboard)
-                            .parse_mode(MarkdownV2)
-                            .await?;
+                        match link_id {
+                            None => {
+                                bot.send_message(chat.id, "Error").await?;
+                            }
+                            Some(_) => {
+                                let url = dotenv::var("DATABASE_URL").unwrap();
+                                let db = sea_orm::Database::connect(url).await.unwrap();
+                                let repository = ChapterRepository { db };
+                                let chapter = repository.find_by_id(link_id.unwrap()).await;
+                                let keyboard = make_keyboard(Some(chapter.book_id)).await;
+                                let link = format!("[Глава {}]({})", chapter.id, chapter.link);
+                                bot.edit_message_text(chat.id, id, link)
+                                    .reply_markup(keyboard)
+                                    .parse_mode(MarkdownV2)
+                                    .await?;
+                            }
+                        }
                     }
                     "/book_add" => {
                         bot.send_message(chat.id, "Введите название произведения: ").await?;
@@ -299,7 +314,13 @@ async fn main() {
             .enter_dialogue::<Message, InMemStorage<State>, State>()
             .filter_command::<Command>()
             .branch(teloxide::handler![State::Start].endpoint(message_handler))
-            .branch(
+        )
+        .branch(
+            Update::filter_callback_query()
+                .enter_dialogue::<CallbackQuery, InMemStorage<State>, State>()
+                .endpoint(callback_handler)
+        )
+        .branch(
                 teloxide::handler![State::AddBookTitle]
                     .endpoint(add_book_title_handler)
             )
@@ -319,12 +340,7 @@ async fn main() {
                 teloxide::handler![State::AddChapterLink { book_id, chapter_id }]
                     .endpoint(add_chapter_link_handler)
             )
-        )
-        .branch(
-            Update::filter_callback_query()
-                .enter_dialogue::<CallbackQuery, InMemStorage<State>, State>()
-                .endpoint(callback_handler)
-        );
+        ;
 
     Dispatcher::builder(bot.clone(), handler)
         .dependencies(dptree::deps![InMemStorage::<State>::new()])
