@@ -321,7 +321,7 @@ async fn main() {
         )
         .branch(
             Update::filter_callback_query()
-                .enter_dialogue::<Message, InMemStorage<State>, State>()
+                .enter_dialogue::<CallbackQuery, InMemStorage<State>, State>()
                 .endpoint(callback_handler)
         );
 
