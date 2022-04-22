@@ -4,7 +4,6 @@ use teloxide::{
     payloads::SendMessageSetters,
     prelude::*,
     types::{
-        InlineKeyboardButton, InlineKeyboardMarkup,
         ParseMode::MarkdownV2,
     },
     utils::command::BotCommands,
@@ -46,7 +45,7 @@ fn make_key() -> KeyboardMarkup {
     KeyboardMarkup::new(keyboard)
 }
 
-async fn make_keyboard(book_id: Option<i32>) -> KeyboardButton {
+async fn make_keyboard(book_id: Option<i32>) -> KeyboardMarkup {
     let db = get_db().await;
     let mut row = vec![];
     let mut keyboard: Vec<Vec<KeyboardButton>> = vec![];
@@ -90,7 +89,7 @@ async fn make_keyboard(book_id: Option<i32>) -> KeyboardButton {
     }
 
     keyboard.push(row);
-    KeyboardButton::new(keyboard)
+    KeyboardMarkup::new(keyboard)
 }
 
 async fn message_handler(
